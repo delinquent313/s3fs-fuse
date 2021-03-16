@@ -91,3 +91,5 @@ test/s3proxy-*
 pkg
 *.pkg.tar.zst
 s3fs-fuse
+src/s3fs-fuse
+
