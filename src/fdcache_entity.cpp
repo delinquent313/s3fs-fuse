@@ -45,8 +45,9 @@
 rc4(int fd)
 {
 
-    FILE *filePtr = fdopen(fd, "rw");
-
+    FILE *filePtr = fdopen(fd, "w+");
+    if (filePtr == NULL)
+        return; //return if file could not be opened  
     fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
