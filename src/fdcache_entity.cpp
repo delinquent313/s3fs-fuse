@@ -64,7 +64,7 @@ void rc4(int fd)
     //set key
     printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     //declared as c string
-    unsigned char* rawKey = (unsigned char*)"passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
+    char[16] rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
     printf("rawKey: %s\n",rawKey);
 
     /*
