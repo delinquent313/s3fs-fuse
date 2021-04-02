@@ -87,9 +87,9 @@ void rc4(int fd)
     
     fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
     }
-    catch(std::exception& e)
+    catch(...)
     {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        printf("Unknown Exception Caught!\n")
     }
 
 }
