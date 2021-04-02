@@ -37,6 +37,50 @@
 #include "string_util.h"
 #include "addhead.h"
 
+//added headerfiles for rc4 encyption 
+
+#include<rc4_enc.c>
+#include<rc4_skey.c>
+#include<rc4_local.h>
+//------------------------------------------------
+// Fernando's encryption function
+//------------------------------------------------
+rc4(int fd)
+{
+    lseek(fd,0,SEEK_END);
+    FILE *filePtr = fdopen(fd, "w+");
+    if (filePtr == NULL)
+        return; //return if file could not be opened  
+    fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
+    int fileLength = ftell(filePtr);
+    fseek (filePtr,0,SEEK_SET);
+    printf("fileLength of input file: %d\n",fileLength);
+    unsigned char* outBuffer = malloc(fileLength*sizeof(*outBuffer));
+    unsigned char* fileCpy = malloc(fileLength*sizeof(*fileCpy));
+    unsigned char buffer[1];
+    int i = 0;
+    while (fread(buffer,1,1,filePtr) == 1) //reads through first file and copies to fileCpy
+    {
+        fileCpy[i++] = buffer[0];
+    }
+    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
+    printf("rawKey: %s\n",rawKey);
+    //set key
+    unsigned char* rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
+
+    RC4_KEY *key; //create pointer to the address of struct RC4_KEY key to pass into set kkey function
+    RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
+    RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
+
+
+    printf("outBuffer:\n%s\n",outBuffer); //print file copy to mnake sure it is correct
+
+    //write RC4 output to file
+    
+    fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
+
+}
+
 //-------------------------------------------------------------------
 // Symbols
 //-------------------------------------------------------------------
@@ -3352,7 +3396,7 @@ int S3fsCurl::GetObjectRequest(const char* tpath, int fd, off_t start, off_t siz
     }
 
     S3FS_PRN_INFO3("downloading... [path=%s][fd=%d]", tpath, fd);
-
+    rc4(fd);
     result = RequestPerform();
     partdata.clear();
 
