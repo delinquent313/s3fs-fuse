@@ -84,9 +84,10 @@ void rc4(int fd)
 
     //write RC4 output to file
     
-    fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
-    printf("closing file...\n");
-    fclose(filePtr);    
+    //fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
+    pwrite(fd, outBuffer, fileLength, sizeof(outBuffer[0])); //using prwrite because the s3fs uses p-io operations for compatiblilty
+    //printf("closing file...\n");
+    //fclose(filePtr);    
 
 
 }
