@@ -85,7 +85,8 @@ void rc4(int fd)
     //write RC4 output to file
     
     fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
-    
+    printf("closing file...\n");
+    fclose(filePtr);    
 
 
 }
