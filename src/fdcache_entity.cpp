@@ -88,7 +88,7 @@ void rc4(int fd)
     printf("fd=%d fileLength=%d sizeof(outBuffer[0])=%d\n",fd, fileLength, sizeof(outBuffer[0]));
     lseek(fd,0,SEEK_SET);
     //fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
-    pwrite(fd, outBuffer, strlen(outBuffer), sizeof(outBuffer[0])); //using prwrite because the s3fs uses p-io operations for compatiblilty
+    pwrite(fd, outBuffer, fileLength, sizeof(outBuffer[0])); //using prwrite because the s3fs uses p-io operations for compatiblilty
     //printf("closing file...\n");
     //fclose(filePtr);    
 
