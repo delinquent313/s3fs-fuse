@@ -71,6 +71,8 @@ void rc4(int fd)
     RC4_KEY *key; //create pointer to the address of struct RC4_KEY key to pass into set key function
     RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
     */
+    try {
+
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     printf("initializing key\n");
     RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
@@ -85,7 +87,11 @@ void rc4(int fd)
     //write RC4 output to file
     
     fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
-
+    }
+    //for debugging
+    catch (std::exception& e){
+        std::cerr << "Exception caught :" << e.what() << std::endl;
+    }
 }
 
 
