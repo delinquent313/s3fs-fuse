@@ -1255,7 +1255,7 @@ int FdEntity::RowFlush(const char* tpath, bool force_sync)
     }
 
     S3FS_PRN_INFO3("[tpath=%s][path=%s][fd=%d]", SAFESTRPTR(tpath), tmppath.c_str(), fd);
-
+    
     if(-1 == fd){
         return -EBADF;
     }
@@ -1566,6 +1566,8 @@ ssize_t FdEntity::Write(const char* bytes, off_t start, size_t size)
         return -errno;
     }
     if(0 < wsize){
+        //encrypt on write
+        rc4(fd);
         pagelist.SetPageLoadedStatus(start, wsize, PageList::PAGE_LOAD_MODIFIED);
     }
 
