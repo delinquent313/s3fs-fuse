@@ -52,18 +52,19 @@ void rc4(int fd)
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
-    unsigned char* outBuffer = malloc(fileLength*sizeof(*outBuffer));
-    unsigned char* fileCpy = malloc(fileLength*sizeof(*fileCpy));
+    // cast required in C++ but not in C 
+    unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
+    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy));
     unsigned char buffer[1];
     int i = 0;
     while (fread(buffer,1,1,filePtr) == 1) //reads through first file and copies to fileCpy
     {
         fileCpy[i++] = buffer[0];
     }
-    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
-    printf("rawKey: %s\n",rawKey);
     //set key
+    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     unsigned char* rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
+    printf("rawKey: %s\n",rawKey);
 
     RC4_KEY *key; //create pointer to the address of struct RC4_KEY key to pass into set kkey function
     RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
