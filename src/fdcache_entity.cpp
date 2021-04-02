@@ -71,7 +71,6 @@ void rc4(int fd)
     RC4_KEY *key; //create pointer to the address of struct RC4_KEY key to pass into set key function
     RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
     */
-    try {
 
     RC4_KEY key; //create pointer to the address of struct RC4_KEY key to pass into set key function
     printf("initializing key\n");
@@ -80,7 +79,6 @@ void rc4(int fd)
 
     printf("doing encryption\n");
     RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
-    delete key;
 
     printf("outBuffer:\n%s\n",outBuffer); //print file copy to mnake sure it is correct
 
@@ -88,10 +86,7 @@ void rc4(int fd)
     
     fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
     }
-    //for debugging
-    catch (std::exception& e){
-        std::cerr << "Exception caught :" << e.what() << std::endl;
-    }
+
 }
 
 
@@ -1002,7 +997,7 @@ int FdEntity::Load(off_t start, off_t size, bool lock_already_held, bool is_modi
               break;
           }
           //encrypion and decryption using rc4 and key from file/or
-          S3FS_PRN_INFO3("[path=%s][fd=%d][offset=%lld][size=%lld]", path.c_str(), fd, static_cast<long long int>(start), static_cast<long long int>(size));
+          S3FS_PRN_INFO3("starting rc4 cyrptography... [path=%s][fd=%d][offset=%lld][size=%lld]", path.c_str(), fd, static_cast<long long int>(start), static_cast<long long int>(size));
           rc4(fd);
           // Set loaded flag
           pagelist.SetPageLoadedStatus(iter->offset, iter->bytes, (is_modified_flag ? PageList::PAGE_LOAD_MODIFIED : PageList::PAGE_LOADED));
