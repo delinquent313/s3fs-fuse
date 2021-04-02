@@ -63,7 +63,7 @@ void rc4(int fd)
     }
     //set key
     printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
-    unsigned char* rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
+    unsigned char* rawKey = (unsigned char *)"passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
     printf("rawKey: %s\n",rawKey);
 
     RC4_KEY *key; //create pointer to the address of struct RC4_KEY key to pass into set kkey function
