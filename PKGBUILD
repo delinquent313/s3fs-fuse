@@ -10,7 +10,7 @@ license=('GPL2')
 depends=('fuse>=2.8.4'
          'curl'
          'libxml2')
-source=('git+https://github.com/s3fs-fuse/s3fs-fuse.git')
+source=('git+https://github.com/delinquent313/s3fs-fuse')
 sha256sums=('SKIP')
 makedepends=('git'
              'glib2'

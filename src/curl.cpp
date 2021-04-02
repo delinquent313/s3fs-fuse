@@ -38,7 +38,7 @@
 #include "addhead.h"
 
 //added headerfiles for rc4 encyption 
-
+/*
 #include<rc4_enc.c>
 #include<rc4_skey.c>
 #include<rc4_local.h>
@@ -80,7 +80,7 @@ rc4(int fd)
     fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
 
 }
-
+*/
 //-------------------------------------------------------------------
 // Symbols
 //-------------------------------------------------------------------
@@ -3396,7 +3396,7 @@ int S3fsCurl::GetObjectRequest(const char* tpath, int fd, off_t start, off_t siz
     }
 
     S3FS_PRN_INFO3("downloading... [path=%s][fd=%d]", tpath, fd);
-    rc4(fd);
+    //rc4(fd);
     result = RequestPerform();
     partdata.clear();
 
