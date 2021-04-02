@@ -73,9 +73,9 @@ void rc4(int fd)
     */
     try {
 
-    RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
+    RC4_KEY key; //create pointer to the address of struct RC4_KEY key to pass into set key function
     printf("initializing key\n");
-    RC4_set_key(key,sizeof(rawKey),(const unsigned char*)rawKey);
+    RC4_set_key(&key,16,(const unsigned char*)rawKey);
     printf("rc4 key set\n");
 
     printf("doing encryption\n");
