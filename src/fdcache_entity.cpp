@@ -89,7 +89,7 @@ void rc4(int fd)
     }
     catch(...)
     {
-        printf("Unknown Exception Caught!\n")
+        printf("Unknown Exception Caught!\n");
     }
 
 }
