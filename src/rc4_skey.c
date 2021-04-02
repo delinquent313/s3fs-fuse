@@ -35,6 +35,7 @@ const char *RC4_options(void)
 
 void RC4_set_key(RC4_KEY *key, int len, const unsigned char *data)
 {
+    printf("inside RC4_set_key(...)\n");
     register RC4_INT tmp;
     register int id1, id2;
     register RC4_INT *d;
