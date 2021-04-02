@@ -42,7 +42,7 @@ cppcheck:
             --enable=warning,style,information,missingInclude \
             --suppress=missingIncludeSystem \
             --suppress=unmatchedSuppression \
-            src/ test/
+            src/ test/ src/crypto/ src/internal/ src/openssl/
 
 #
 # Local variables:
