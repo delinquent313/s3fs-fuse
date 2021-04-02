@@ -1,7 +1,7 @@
 # Maintainer:  fernando villarreal <fernando.villarreal.sd@gmail.co>
 
 pkgname=s3fs-fuse-rc4
-pkgver=1.89.r1745.8916c7a
+pkgver=1.89.r1746.9b86474
 pkgrel=1
 pkgdesc='FUSE-based file system backed by Amazon S3 with OpenSSL support, with rc4 encryption'
 arch=('i686' 'x86_64')
