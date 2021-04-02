@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ######################################################################
-SUBDIRS=src test doc src/crypto src/internal src/openssl 
+SUBDIRS=src test doc 
 
 EXTRA_DIST=doc default_commit_hash
 
@@ -42,7 +42,7 @@ cppcheck:
             --enable=warning,style,information,missingInclude \
             --suppress=missingIncludeSystem \
             --suppress=unmatchedSuppression \
-            src/ test/ src/crypto/ src/internal/ src/openssl/
+            src/ test/ 
 
 #
 # Local variables:
