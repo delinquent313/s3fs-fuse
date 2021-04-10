@@ -89,7 +89,7 @@ void rc4(int fd)
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
-    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy); 
+    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char buffer[1];
     int i= 0;
 
