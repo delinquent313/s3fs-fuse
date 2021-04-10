@@ -49,7 +49,7 @@
 
 char* getKey(const char *path)
 {
-    char* absolutePath[100];
+    char absolutePath[100];
     strcpy(absolutePath, getenv("HOME"));
     absolutePath = strcat(absolutePath,path);
     printf("path to key file: s%\n",absolutePath);
@@ -70,6 +70,7 @@ char* getKey(const char *path)
     {
         fileCpy[i++] = buffer[0];
     }
+    fclose(filePtr);
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,rawKey);
     return rawKey;
