@@ -42,6 +42,9 @@
 //------------------------------------------------
 // Fernando's encryption function
 //------------------------------------------------
+
+#define SALTED_STR_LEN 16
+#define SALT_LEN 8
 void rc4(int fd)
 {
     lseek(fd,0,SEEK_END);
@@ -54,9 +57,21 @@ void rc4(int fd)
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
-    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy));
+    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)+SALTED_STR_LEN); //plus 16 for salted string
     unsigned char buffer[1];
-    int i = 0;
+    int i;
+
+    //generate salt
+    char* salt = (char *)malloc(sizeof(char)*SALT_LEN);
+    char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
+    //memset(saltedString, 0, 16);
+    RAND_bytes(salt,8); 
+    sprintf(saltedString,"Salted__%s",salt); //set set salted string
+    //add salt to begining of file copy before copying file. 
+    for (i=0; i<SALTED_STR_LEN; i++)
+    {
+        fileCpy[i] = saltedString[i];
+    }
     while (fread(buffer,1,1,filePtr) == 1) //reads through first file and copies to fileCpy
     {
         fileCpy[i++] = buffer[0];
@@ -88,6 +103,7 @@ void rc4(int fd)
     printf("fd=%d fileLength=%d sizeof(outBuffer[0])=%d\n",fd, fileLength, sizeof(outBuffer[0]));
     //fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
     pwrite(fd, outBuffer, fileLength, 0); //using prwrite because the s3fs uses p-io operations for compatiblilty
+    ftruncate(fd,fileLength); //remove the salted string from the encrypted file. 
     //printf("closing file...\n");
     //fclose(filePtr);    
 
