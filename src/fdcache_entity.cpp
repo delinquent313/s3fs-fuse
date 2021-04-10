@@ -46,6 +46,37 @@
 
 #define SALTED_STR_LEN 16
 #define SALT_LEN 8
+
+char* getKey(const char *path)
+{
+    char* absolutePath = "~/";
+
+    strncat(absolutePath,&path,strlen(path));
+    prinf("path to key file: s%\n",absolutePath);
+    FILE *filePtr = fopen(absolutePath,r);
+    if (filePtr == NULL)
+        return "passwordpassword";//if the file is not found use default key
+    fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
+    int fileLength = ftell(filePtr);
+    fseek (filePtr,0,SEEK_SET);
+    
+    char* rawKey = (char *)malloc(sizeof(char)*16);
+    char* fileCpy = (char*)malloc(fileLength*sizeof(*fileCpy); 
+    char buffer[1];
+    int i= 0;
+
+    printf("reading key... \n");
+    while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
+    {
+        fileCpy[i++] = buffer[0];
+    }
+    printf("done.\n");
+    printf("read key from %s: %s\n", absolutePath,rawKey);
+    return rawKey;
+    
+
+
+}
 void rc4(int fd)
 {
     lseek(fd,0,SEEK_END);
@@ -58,30 +89,38 @@ void rc4(int fd)
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
-    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy+SALTED_STR_LEN)); //plus 16 for salted string
+    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy); 
     unsigned char buffer[1];
-    int i;
+    int i= 0;
 
     //generate salt
+    /*
     unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
     char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
-    //memset(saltedString, 0, 16);
+    memset(saltedString, 0, SALTED_STR_LEN);
     RAND_bytes(salt,8); 
     sprintf(saltedString,"Salted__%s",salt); //set set salted string
     //add salt to begining of file copy before copying file. 
+    printf("Appendng Salted String to FileCpy\n");
     for (i=0; i<SALTED_STR_LEN; i++)
     {
         fileCpy[i] = saltedString[i];
     }
-    while (fread(buffer,1,1,filePtr) == 1) //reads through first file and copies to fileCpy
+    */
+    printf("copying file... \n");
+    while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
     {
         fileCpy[i++] = buffer[0];
     }
+    printf("done.\n");
+
     //set key
     printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     //declared as c string
-    char* rawKey = (char *)malloc(sizeof(char)*16);
-    rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
+
+    char* rawKey = getKey((const char*)".rc4Key");
+    //char* rawKey = (char *)malloc(sizeof(char)*16);
+    //rawKey = "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
 
     printf("rawKey: %s\n",rawKey);
 
@@ -102,11 +141,9 @@ void rc4(int fd)
 
     //write RC4 output to file
     printf("fd=%d fileLength=%d sizeof(outBuffer[0])=%d\n",fd, fileLength, sizeof(outBuffer[0]));
-    //fwrite(outBuffer,sizeof(outBuffer[0]),fileLength,filePtr); //overwrite original file
     pwrite(fd, outBuffer, fileLength, 0); //using prwrite because the s3fs uses p-io operations for compatiblilty
-    ftruncate(fd,fileLength); //remove the salted string from the encrypted file. 
-    //printf("closing file...\n");
-    //fclose(filePtr);    
+
+//  ftruncate(fd,fileLength); //remove the salted string from the encrypted file. 
 
 
 }
