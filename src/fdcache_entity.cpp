@@ -63,8 +63,8 @@ void rc4(int fd)
     int i;
 
     //generate salt
-    char* salt = (char *)malloc(sizeof(char)*SALT_LEN);
-    char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
+    unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
+    unsigned char* saltedString = (unsigned char *)malloc(sizeof(unsigned char)*SALTED_STR_LEN);
     //memset(saltedString, 0, 16);
     RAND_bytes(salt,8); 
     sprintf(saltedString,"Salted__%s",salt); //set set salted string
