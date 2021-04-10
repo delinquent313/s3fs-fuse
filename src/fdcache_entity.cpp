@@ -52,7 +52,7 @@ char* getKey(const char *path)
     char *absolutePath = (char *)malloc(sizeof(char)*100);;
     strcpy(absolutePath, getenv("HOME"));
     absolutePath = strcat(absolutePath,path);
-    printf("path to key file: s%\n",absolutePath);
+    printf("path to key file: %s\n",absolutePath);
     FILE *filePtr = fopen(absolutePath,"r");
     if (filePtr == NULL)
         return "passwordpassword";//if the file is not found use default key
