@@ -62,7 +62,6 @@ char* getKey(const char *path)
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     
-    char* rawKey = (char *)malloc(sizeof(char)*16);
     char* fileCpy = (char*)malloc(fileLength*sizeof(*fileCpy)); 
     char buffer[1];
     int i= 0;
@@ -76,8 +75,7 @@ char* getKey(const char *path)
     //maybe free memory if it works :)    
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
-    strcpy(rawKey,fileCpy);
-    return rawKey;
+    return fileCpy;
     
 
 
