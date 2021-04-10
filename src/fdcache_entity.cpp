@@ -50,7 +50,9 @@
 char* getKey(const char *path)
 {
     char *absolutePath = (char *)malloc(sizeof(char)*100);;
+    char c = '/';
     strcpy(absolutePath, getenv("HOME"));
+    strncat(absolutePath, &c, 1); //adds '/' after {user}
     absolutePath = strcat(absolutePath,path);
     printf("path to key file: %s\n",absolutePath);
     FILE *filePtr = fopen(absolutePath,"r");
