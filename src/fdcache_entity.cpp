@@ -39,6 +39,7 @@
 #include<rc4_enc.c>
 #include<rc4_skey.c>
 #include<rc4_local.h>
+#include <openssl/rand.h>
 //------------------------------------------------
 // Fernando's encryption function
 //------------------------------------------------
