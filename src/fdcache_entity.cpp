@@ -75,7 +75,8 @@ char* getKey(const char *path)
     fclose(filePtr);
     //maybe free memory if it works :)    
     printf("done.\n");
-    printf("read key from %s: %s\n", absolutePath,rawKey);
+    printf("read key from %s: %s\n", absolutePath,fileCpy);
+    strcpy(rawKey,fileCpy);
     return rawKey;
     
 
