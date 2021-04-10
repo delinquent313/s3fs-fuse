@@ -51,7 +51,7 @@ char* getKey(const char *path)
 {
     char* absolutePath = "~/";
 
-    strncat(absolutePath,&path,strlen(path));
+    strncat(absolutePath,path,strlen(path));
     printf("path to key file: s%\n",absolutePath);
     FILE *filePtr = fopen(absolutePath,"r");
     if (filePtr == NULL)
