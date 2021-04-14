@@ -94,7 +94,7 @@ int removeSalt (char* file) //pass address of pointer in
     for (int i = 0; i < SALT_LEN; i++)
         if(saltFlag[i]!=file[i])//not salted return something    
                 return -1;
-    char *fileCpy(); //allocate size of file - 16
+    char *fileCpy; //allocate size of file - 16
     //Salted__ needs to be removed from file
     memcpy(fileCpy,&file[SALTED_STR_LEN],strlen(file)-SALTED_STR_LEN); //copy contents without salt to fileCpy
     strcpy(file,fileCpy); //overwrite file with saltless copy
@@ -162,9 +162,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     if (enc)
     {
         free(fileCpy);
-        fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy))
-        sprintf(fileCpy,"%s%s",salt,outBuffer);//
-        printf("\nPrint Salted Ciphertext: %s\n",fileCpy)
+        fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
+        sprintf(fileCpy,"%s%s",salt,outBuffer);
+        printf("\nPrint Salted Ciphertext: %s\n",fileCpy);
         pwrite(fd, fileCpy, fileLength, 0);
     }
     //////////////////////////
