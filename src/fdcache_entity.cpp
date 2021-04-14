@@ -118,6 +118,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
     unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char buffer[1];
+    unsigned char* salt;
     int i= 0;
 
     //if encrypting/////////////
@@ -126,7 +127,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     {
         free(outBuffer);
         outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
-        unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
+        salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
         //generate salt
         salt = generateSalt(); 
     }
