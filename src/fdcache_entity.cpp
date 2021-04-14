@@ -105,10 +105,6 @@ int removeSalt (char* file) //pass address of pointer in
 }
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
 {
-    int dec;
-    if (!enc)
-        dec = 1;
-
     lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
     if (filePtr == NULL)
@@ -127,7 +123,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
 
     //if encrypting/////////////
     //realocate output buffer to account for the Salted String
-    if (enc)
+    if (enc==1)
     {
             //generate salt
         printf("generating salt... \n");
@@ -163,7 +159,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
     delete key;
     //add salt to begining of outBuffer if encrtypting
-    if (enc)
+    if (enc==1)
     {
         free(fileCpy);
         fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
@@ -176,7 +172,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     
     //write RC4 output to file
 
-    if (dec)
+    if (enc==0)
     {
         printf("Print decoded Ciphertext:%s\n",outBuffer); //print file copy to mnake sure it is correct
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
