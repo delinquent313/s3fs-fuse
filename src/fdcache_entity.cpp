@@ -80,7 +80,7 @@ char* getKey(const char *path)
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
 {
     unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
-    char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
+    char* saltedString = (char *)malloc(sizeof(char)*(SALT_LEN+SALTED_STR_LEN));
     printf("memset 0 salt \n");
     memset(saltedString, 0, SALTED_STR_LEN);
     printf("randomizing salt \n");
