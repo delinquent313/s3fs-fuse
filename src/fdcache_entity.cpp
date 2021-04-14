@@ -79,22 +79,26 @@ char* getKey(const char *path)
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
 {
-    unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
-    unsigned char* saltedString = (unsigned char *)malloc(sizeof(unsigned char)*SALTED_STR_LEN);
+    char* salt = (char *)malloc(sizeof(char)*SALT_LEN);
+    char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
     memset(saltedString, 0, SALTED_STR_LEN);
     RAND_bytes(salt,8); 
     sprintf(saltedString,"Salted__%s",salt); //set set salted string
     //add salt to begining of file copy before copying file. 
     printf("generating salted string: %s\n",saltedString);
-    return saltedString;
+    return (unsigned char*)saltedString;
 }
 int removeSalt (char* file) //pass address of pointer in
 {
     char *saltFlag = "Salted__";
-    char *fileFlag
-    for (int i = 0; i < SALT_LEN)
-
-
+    for (int i = 0; i < SALT_LEN; i++)
+        if(saltFlag[i]!=file[i])//not salted return something    
+                return -1;
+    char *fileCpy(); //allocate size of file - 16
+    //Salted__ needs to be removed from file
+    memcpy(fileCpy,&file[SALTED_STR_LEN],strlen(file)-SALTED_STR_LEN); //copy contents without salt to fileCpy
+    strcpy(file,fileCpy); //overwrite file with saltless copy
+    return 1;
 }
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
 {
@@ -120,7 +124,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     //realocate output buffer to account for the Salted String
     if (enc)
     {
-        outBuffer = (unsigned char*)realloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
+        free(outBuffer);
+        outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
         unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
         //generate salt
         salt = generateSalt(); 
@@ -156,7 +161,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     //add salt to begining of outBuffer if encrtypting
     if (enc)
     {
-        fileCpy = (unsigned char*)realloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy))
+        free(fileCpy);
+        fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy))
         sprintf(fileCpy,"%s%s",salt,outBuffer);//
         printf("\nPrint Salted Ciphertext: %s\n",fileCpy)
         pwrite(fd, fileCpy, fileLength, 0);
