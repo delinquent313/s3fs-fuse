@@ -164,7 +164,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     {
         free(fileCpy);
         fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
-        sprintf(fileCpy,"%s%s",salt,outBuffer);
+        sprintf((char *)fileCpy,"%s%s",salt,outBuffer);
         printf("\nPrint Salted Ciphertext: %s\n",fileCpy);
         pwrite(fd, fileCpy, fileLength, 0);
     }
