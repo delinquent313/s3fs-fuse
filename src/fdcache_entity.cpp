@@ -79,11 +79,11 @@ char* getKey(const char *path)
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
 {
-    char* salt = (char *)malloc(sizeof(char)*SALT_LEN);
+    unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
     char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
     memset(saltedString, 0, SALTED_STR_LEN);
-    RAND_bytes(salt,8); 
-    sprintf(saltedString,"Salted__%s",salt); //set set salted string
+    RAND_bytes(salt,8);
+    sprintf(saltedString,"Salted__%s",(char *)salt); //set set salted string
     //add salt to begining of file copy before copying file. 
     printf("generating salted string: %s\n",saltedString);
     return (unsigned char*)saltedString;
