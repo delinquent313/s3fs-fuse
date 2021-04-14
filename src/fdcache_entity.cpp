@@ -118,20 +118,18 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
-    unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
+    //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
+    unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
     unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char buffer[1];
-    unsigned char* salt;
+    unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int i= 0;
 
     //if encrypting/////////////
     //realocate output buffer to account for the Salted String
     if (enc)
     {
-        free(outBuffer);
-        outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
-        salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
-        //generate salt
+            //generate salt
         printf("generating salt... \n");
         salt = generateSalt(); 
         printf("done. \n");
