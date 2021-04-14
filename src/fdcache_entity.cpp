@@ -81,8 +81,11 @@ unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 
 {
     unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
     char* saltedString = (char *)malloc(sizeof(char)*SALTED_STR_LEN);
+    printf("memset 0 salt \n");
     memset(saltedString, 0, SALTED_STR_LEN);
+    printf("randomizing salt \n");
     RAND_bytes(salt,8);
+    printf("sprint salt to saltedString \n");
     sprintf(saltedString,"Salted__%s",(char *)salt); //set set salted string
     //add salt to begining of file copy before copying file. 
     printf("generating salted string: %s\n",saltedString);
@@ -129,7 +132,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
         salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
         //generate salt
+        printf("generating salt... \n");
         salt = generateSalt(); 
+        printf("done. \n");
     }
     ////////////////////////////
 
