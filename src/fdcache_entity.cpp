@@ -103,6 +103,7 @@ int removeSalt (char* file) //pass address of pointer in
     strcpy(file,fileCpy); //overwrite file with saltless copy
     return 1;
 }
+
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
 {
     lseek(fd,0,SEEK_END);
@@ -121,6 +122,14 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int i= 0;
 
+
+
+    printf("copying file... \n");
+    while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
+    {
+        fileCpy[i++] = buffer[0];
+    }
+    printf("done.\n");
     //if encrypting/////////////
     //realocate output buffer to account for the Salted String
     if (enc==1)
@@ -130,17 +139,27 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         salt = generateSalt(); 
         printf("done. \n");
     }
+    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
+    else//if decrypting 
+        //remove Salt if Salted continue as unsalted if not salted
+        {
+            //check header
+            int headerStat = removeSalt(fileCpy));
+            if (headerStat == 1)
+                printf("salt removed for decrypting\n")
+            else if (headerStat == -1)
+                printf("input is not salted continuing...\n");
+            else 
+            {
+                printf("Something went wrong! ");
+                return;
+            }     
+        }
+    if (headerStat == 1)
+        printf("fileCpy after header check/strip:\n%s\n",fileCpy);
     ////////////////////////////
 
-    printf("copying file... \n");
-    while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
-    {
-        fileCpy[i++] = buffer[0];
-    }
-    printf("done.\n");
-
     //set key
-    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     //declared as c string
     //initialize memory for rawkey with calloc maybe??
     char* rawKey = getKey((const char*)".rc4Key"); 
@@ -172,11 +191,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     
     //write RC4 output to file
 
-    if (enc==0)
+    else
     {
         printf("Print decoded Ciphertext:%s\n",outBuffer); //print file copy to mnake sure it is correct
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
-        ftruncate(fd,fileLength); //change to size of output buffer??? if this doesnt work
+        //ftruncate(fd,fileLength); //change to size of output buffer??? if this doesnt work
     }
 
 
