@@ -178,7 +178,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         unsigned char *tempFile = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
         sprintf((char *)tempFile,"%s%s",salt,fileCpy); //adding salt to cpy before encryptiong
         unsigned char * saltedPlainText = tempFile + 8; //puts a pointer 8 address infront of the start of fileCpy C Str
+        printf ("Salted Plain Text:\n%s\n",saltedPlainText);
         RC4(key,fileLength,(const unsigned char*)saltedPlainText,outBuffer);//encrypting only {salt}+{plaintext} without Salted__
+        printf("\nPrint outBuffer: \n%s\n",outBuffer);
         sprintf((char *)tempFile,"Salted__%s",outBuffer); //adding salt flag (salted__) to output buffer
         printf("\nPrint Salted Ciphertext: \n%s\n",tempFile);
         pwrite(fd, tempFile, fileLength + SALTED_STR_LEN, 0);
