@@ -124,9 +124,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     unsigned char buffer[1];
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int i= 0;
-
-
-
     printf("copying file... \n");
     while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
     {
@@ -138,7 +135,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     //realocate output buffer to account for the Salted String
     if (enc==1)
     {
-            //generate salt
+        //generate salt
         printf("generating salt... \n");
         salt = generateSalt(); 
         printf("done. \n");
@@ -162,29 +159,38 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
                 printf("Something went wrong! ");
                 return;
             }     
-
         }
     ////////////////////////////
 
     //set key
     //declared as c string
-    //initialize memory for rawkey with calloc maybe??
     char* rawKey = getKey((const char*)".rc4Key"); 
-    //char* rawKey = (char *)malloc(sizeof(char)*16);
-    // "passwordpassword"; //70617373776f726470617373776f7264 hex equivelent
-
     printf("rawKey: %s\n",rawKey);
-
-
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     printf("initializing key\n");
     RC4_set_key(key,16,(const unsigned char*)rawKey);
     printf("rc4 key set\n");
 
     printf("doing encryption\n");
-    RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
+    //todo: add salt before encryption but ignore Salted__ 
+    if (enc == 1 )
+    {
+        unsigned char *tempFile = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
+        sprintf((char *)tempFile,"%s%s",salt,fileCpy); //adding salt to cpy before encryptiong
+        unsigned char * saltedPlainText = tempFile + 8; //puts a pointer 8 address infront of the start of fileCpy C Str
+        RC4(key,fileLength,(const unsigned char*)saltedPlainText,outBuffer);//encrypting only {salt}+{plaintext} without Salted__
+        sprintf((char *)tempFile,"Salted__%s",outBuffer); //adding salt flag (salted__) to output buffer
+        pwrite(fd, fileCpy, fileLength + SALTED_STR_LEN, 0);
+    }
+    else
+    {
+        RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
+        printf("[file length = %d]Print decoded Ciphertext:\n%s\n",fileLength, outBuffer); //print file copy to mnake sure it is correct
+        pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
+        ftruncate(fd,fileLength); 
+    }
     delete key;
-    //add salt to begining of outBuffer if encrtypting
+    /*//add salt to begining of outBuffer if encrtypting
     if (enc==1)
     {
         free(fileCpy);
@@ -195,7 +201,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         //remove the salted string from the encrypted file. 
     }
     //////////////////////////
-    
     //write RC4 output to file
 
     else
@@ -205,6 +210,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
         ftruncate(fd,fileLength); 
     }
+    */
 
 
 }
