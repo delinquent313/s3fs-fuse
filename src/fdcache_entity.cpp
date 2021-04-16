@@ -97,9 +97,12 @@ int removeSalt (char* file) //pass address of pointer in
     for (int i = 0; i < SALT_LEN; i++)
         if(saltFlag[i]!=file[i])//not salted return something    
                 return -1;
-    char *fileCpy; //allocate size of file - 16
+    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALTED_STR_LEN)); //allocate size of file - 16
+    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALTED_STR_LEN));
     //Salted__ needs to be removed from file
     memcpy(fileCpy,&file[SALTED_STR_LEN],strlen(file)-SALTED_STR_LEN); //copy contents without salt to fileCpy
+    printf("[memcpy file to copy without the first 16 bits (Salted__SALTBITS);]\n");
+    printf("copy: \n%s\n", fileCpy);
     strcpy(file,fileCpy); //overwrite file with saltless copy
     return 1;
 }
