@@ -200,7 +200,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     {
         printf("Print decoded Ciphertext:%s\n",outBuffer); //print file copy to mnake sure it is correct
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
-        //ftruncate(fd,fileLength); //change to size of output buffer??? if this doesnt work
+        ftruncate(fd,fileLength); 
     }
 
 
