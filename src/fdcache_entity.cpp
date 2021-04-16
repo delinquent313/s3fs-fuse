@@ -144,9 +144,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         {
         //remove Salt if Salted continue as unsalted if not salted
             //check header
-            int headerStat = removeSalt(fileCpy);
+            int headerStat = removeSalt((char *)fileCpy);
             if (headerStat == 1)
-                printf("salt removed for decrypting\n")
+                printf("salt removed for decrypting\n");
             else if (headerStat == -1)
                 printf("input is not salted continuing...\n");
             else 
