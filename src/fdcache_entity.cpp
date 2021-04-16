@@ -152,7 +152,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
             {
                 printf("salt removed for decrypting\n");
                 fileLength -= SALTED_STR_LEN; //reduce file size by size of salt
-                fileCpy[fileLength] = '\0'
+                fileCpy[fileLength] = '\0';
                 printf("fileCpy after header check/strip:\n%s\n",fileCpy);
             }
             else if (headerStat == -1)
