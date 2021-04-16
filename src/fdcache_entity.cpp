@@ -130,6 +130,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         fileCpy[i++] = buffer[0];
     }
     printf("done.\n");
+    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     //if encrypting/////////////
     //realocate output buffer to account for the Salted String
     if (enc==1)
@@ -139,12 +140,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         salt = generateSalt(); 
         printf("done. \n");
     }
-    printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
     else//if decrypting 
-        //remove Salt if Salted continue as unsalted if not salted
         {
+        //remove Salt if Salted continue as unsalted if not salted
             //check header
-            int headerStat = removeSalt(fileCpy));
+            int headerStat = removeSalt(fileCpy);
             if (headerStat == 1)
                 printf("salt removed for decrypting\n")
             else if (headerStat == -1)
