@@ -151,6 +151,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
             if (headerStat == 1)
             {
                 printf("salt removed for decrypting\n");
+                fileLength -= SALTED_STR_LEN; //reduce file size by size of salt
+                fileCpy[fileLength] = '\0'
                 printf("fileCpy after header check/strip:\n%s\n",fileCpy);
             }
             else if (headerStat == -1)
@@ -198,7 +200,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
 
     else
     {
-        outBuffer[fileLength] = '\0'; //shorten the stirng befor printing and writing
         printf("[file length = %d]Print decoded Ciphertext:\n%s\n",fileLength, outBuffer); //print file copy to mnake sure it is correct
         
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
