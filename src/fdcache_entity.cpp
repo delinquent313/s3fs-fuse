@@ -146,7 +146,10 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
             //check header
             int headerStat = removeSalt((char *)fileCpy);
             if (headerStat == 1)
+            {
                 printf("salt removed for decrypting\n");
+                printf("fileCpy after header check/strip:\n%s\n",fileCpy);
+            }
             else if (headerStat == -1)
                 printf("input is not salted continuing...\n");
             else 
@@ -154,9 +157,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
                 printf("Something went wrong! ");
                 return;
             }     
+
         }
-    if (headerStat == 1)
-        printf("fileCpy after header check/strip:\n%s\n",fileCpy);
     ////////////////////////////
 
     //set key
