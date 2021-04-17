@@ -118,16 +118,21 @@ void removeSalt (char* file) //pass address of pointer in
     return;
 }
 
-void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
+void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for noSalt Encrypting
 {
     lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
     if (filePtr == NULL)
-        return; //return if file could not be opened  
+        return; //return if file could not be opened 
     fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
+    if (enc == 1 && fileLength>8000)
+        {
+            printf("encoding with no salt because file is too large\n");
+            enc = 2;
+        }
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
     unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
@@ -152,6 +157,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         salt = generateSalt(); 
         printf("done. \n");
     }
+    else if (enc==2)
+        printf("skipping salt generation\n");
     else//if decrypting 
         {
         //remove Salt if Salted continue as unsalted if not salted
@@ -184,7 +191,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     printf("rc4 key set\n");
 
     printf("doing encryption\n");
-    //todo: add salt before encryption but ignore Salted__ 
     if (enc == 1 )
     {
         unsigned char *tempFile = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
@@ -198,6 +204,13 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         fileLength += 8;
         printf("\nPrint Salted Ciphertext: \n%s\n",tempFile);
         pwrite(fd, tempFile, fileLength, 0);
+    }
+    else if (enc==2)
+    {
+        RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
+        printf("[file length = %d]Print decoded Ciphertext:\n%s\n",fileLength, outBuffer); //print file copy to mnake sure it is correct
+        
+        pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
     }
     else
     {
