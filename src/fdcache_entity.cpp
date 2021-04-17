@@ -128,9 +128,10 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
-    if (enc == 1 && fileLength>MIN_MULTIPART_SIZE) //display info to make sure is correct macro for min multipart size
+    int multipartThreshold = 1024*1024*8 //Kb  
+    if (enc == 1 && fileLength>multipartThreshold) //display info to make sure is correct macro for min multipart size
         {
-            printf("encoding with no salt because file is too large[MIN_MULTIPART_SIZE=%d ]\n",MIN_MULTIPART_SIZE);
+            printf("encoding with no salt because file is too large[MIN_MULTIPART_SIZE=%d ]\n",multipartThreshold);
             enc = 2; //set function to nosalt encoding mode
         }
     // cast required in C++ but not in C 
