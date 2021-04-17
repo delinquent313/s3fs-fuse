@@ -128,7 +128,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
-    int multipartThreshold = 1024*1024*8; //8Kb  
+    int multipartThreshold = 1024*8; //8Kb  
     if (enc == 1 && fileLength>multipartThreshold) //display info to make sure is correct macro for min multipart size
         {
             printf("encoding with no salt because file is too large[multipartThreshold=%d ]\n",multipartThreshold);
