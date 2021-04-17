@@ -134,6 +134,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char buffer[1];
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
+    int headerStat;
     int i= 0;
     printf("copying file... \n");
     while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
@@ -155,7 +156,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         {
         //remove Salt if Salted continue as unsalted if not salted
             //check header
-            int headerStat = removeSaltHeader((char *)fileCpy); //remove "Salted__"
+            headerStat = removeSaltHeader((char *)fileCpy); //remove "Salted__"
             if (headerStat == 1)
             {
                 printf("salt removed for decrypting\n");
