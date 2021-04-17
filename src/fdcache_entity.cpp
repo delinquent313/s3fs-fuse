@@ -91,20 +91,31 @@ unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 
     printf("generating salted string: %s\n",saltedString);
     return (unsigned char*)saltedString;
 }
-int removeSalt (char* file) //pass address of pointer in
+int removeSaltHeader (char* file) //pass address of pointer in
 {
     char *saltFlag = "Salted__";
     for (int i = 0; i < SALT_LEN; i++)
         if(saltFlag[i]!=file[i])//not salted return something    
                 return -1;
-    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALTED_STR_LEN)); //allocate size of file - 16
-    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALTED_STR_LEN));
+    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALT_LEN)); //allocate size of file - 16
+    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALT_LEN));
     //Salted__ needs to be removed from file
-    memcpy(fileCpy,&file[SALTED_STR_LEN],strlen(file)-SALTED_STR_LEN); //copy contents without salt to fileCpy
-    printf("[memcpy file to copy without the first 16 bits (Salted__SALTBITS);]\n");
+    memcpy(fileCpy,&file[SALT_LEN],strlen(file)-SALT_LEN); //copy contents without salt to fileCpy
+    printf("[memcpy file to copy without the first 8 bits (\"Salted__\");]\n");
     printf("copy: \n%s\n", fileCpy);
-    strcpy(file,fileCpy); //overwrite file with saltless copy
+    strcpy(file,fileCpy); //overwrite file with 8 less bytes
     return 1;
+}
+void removeSalt (char* file) //pass address of pointer in
+{
+    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALT_LEN)); //allocate size of file - 16
+    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALT_LEN));
+    //Salted__ needs to be removed from file
+    memcpy(fileCpy,&file[SALT_LEN],strlen(file)-SALT_LEN); //copy contents without salt to fileCpy
+    printf("[memcpy file to copy without the first 8 bits (SALT);]\n");
+    printf("copy: \n%s\n", fileCpy);
+    strcpy(file,fileCpy); //overwrite file with 8 less bytes
+    return;
 }
 
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
@@ -144,11 +155,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
         {
         //remove Salt if Salted continue as unsalted if not salted
             //check header
-            int headerStat = removeSalt((char *)fileCpy);
+            int headerStat = removeSaltHeader((char *)fileCpy); //remove "Salted__"
             if (headerStat == 1)
             {
                 printf("salt removed for decrypting\n");
-                fileLength -= SALTED_STR_LEN; //reduce file size by size of salt
+                fileLength -= SALT_LEN; //reduce file size by size of header
                 fileCpy[fileLength] = '\0';
                 printf("fileCpy after header check/strip:\n%s\n",fileCpy);
             }
@@ -190,6 +201,14 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting
     else
     {
         RC4(key,fileLength,(const unsigned char*)fileCpy,outBuffer);
+        //remove decrypted salt
+        //adjust file length
+        if (headerStat == 1)
+        {    
+            removeSalt((char*)outBuffer);
+            fileLength -= SALT_LEN; //reduce file size by size of salt
+            outBuffer[fileLength] = '\0';
+        }
         printf("[file length = %d]Print decoded Ciphertext:\n%s\n",fileLength, outBuffer); //print file copy to mnake sure it is correct
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
         ftruncate(fd,fileLength); 
