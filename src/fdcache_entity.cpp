@@ -39,13 +39,17 @@
 #include<rc4_enc.c>
 #include<rc4_skey.c>
 #include<rc4_local.h>
-#include <openssl/rand.h>
+#include<openssl/rand.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 //------------------------------------------------
 // Fernando's encryption function
 //------------------------------------------------
 
 #define SALTED_STR_LEN 16
 #define SALT_LEN 8
+
 
 char* getKey(const char *path)
 {
@@ -119,6 +123,21 @@ void removeSalt (char* file) //pass address of pointer in
 }
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for noSalt Encrypting
 {
+    //fstat fd for length and other variables 
+    struct stat sb;
+    if (fstat(fd,&sb)==-1)
+        perror("stat");
+    else
+    {
+	    printf("\tsize: %ld\n", sb.st_size); 
+	    printf("\tinode: %u\n", sb.st_ino);
+        printf("\tblksize %u",sb.st_blksize);
+        printf("\tblkcount %u",sb.st_blocks);
+    }
+
+
+
+
     lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
     if (filePtr == NULL)
@@ -155,6 +174,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     {
         //generate salt
         //sanity check
+        //TODO: add way of checking if first block if first block salt else no salt
         headerStat = removeSaltHeader((char *)fileCpy);
         if  (headerStat == 1)
             {printf("unexpectedly Salted? \n Warning:continuing may result in unexpected behavior\n\n");}
