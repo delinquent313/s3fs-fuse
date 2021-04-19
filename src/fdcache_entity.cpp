@@ -131,20 +131,21 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     {
 	    printf("\tsize: %ld\n", sb.st_size); 
 	    printf("\tinode: %u\n", sb.st_ino);
-        printf("\tblksize %u",sb.st_blksize);
-        printf("\tblkcount %u",sb.st_blocks);
+        printf("\tblksize %u\n",sb.st_blksize);
+        printf("\tblkcount %u\n",sb.st_blocks);
     }
 
 
 
 
-    lseek(fd,0,SEEK_END);
+    //lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
     if (filePtr == NULL)
         return; //return if file could not be opened 
-    fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
-    int fileLength = ftell(filePtr);
-    fseek (filePtr,0,SEEK_SET);
+    // fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
+    // int fileLength = ftell(filePtr);
+    // fseek (filePtr,0,SEEK_SET);
+    int fileLength = sb.st_size;
     printf("fileLength of input file: %d\n",fileLength);
     /*
     int multipartThreshold = 1024*8; //8Kb  
@@ -175,11 +176,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         //generate salt
         //sanity check
         //TODO: add way of checking if first block if first block salt else no salt
-        headerStat = removeSaltHeader((char *)fileCpy);
-        if  (headerStat == 1)
-            {printf("unexpectedly Salted? \n Warning:continuing may result in unexpected behavior\n\n");}
-        else if (headerStat == -1)
-            {printf("expected: no salt header\n");}    
+        // headerStat = removeSaltHeader((char *)fileCpy);
+        // if  (headerStat == 1)
+        //     {printf("unexpectedly Salted? \n Warning:continuing may result in unexpected behavior\n\n");}
+        // else if (headerStat == -1)
+        //     {printf("expected: no salt header\n");}    
         printf("generating salt... \n");
         salt = generateSalt(); 
         printf("done. \n");
@@ -221,6 +222,15 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     printf("doing encryption\n");
     if (enc == 1 )
     {
+        if (fstat(fd,&sb)==-1)
+            perror("stat");
+        else
+        {
+	        printf("\tsize: %ld\n", sb.st_size); 
+	        printf("\tinode: %u\n", sb.st_ino);
+            printf("\tblksize %u\n",sb.st_blksize);
+            printf("\tblkcount %u\n",sb.st_blocks);
+        }
         unsigned char *tempFile = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
         sprintf((char *)tempFile,"%s%s",salt,fileCpy); //adding salt to cpy before encryptiong
         unsigned char * saltedPlainText = tempFile + 8; //puts a pointer 8 address infront of the start of fileCpy C Str
