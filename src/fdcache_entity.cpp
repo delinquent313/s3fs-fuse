@@ -187,7 +187,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int headerStat;
     int bytes;
-
+    int offset;
 
     //if encrypting/////////////
     if (enc==1)
@@ -209,11 +209,16 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("resetting pointers to beginin of file. \n");
         fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
         lseek(fd,0,SEEK_SET);
-        printf("writing to file byte by byte");
+        printf("writing to file byte by byte:\n");
+        offset = 0;
         while (bytes = fread(inbuff,1,1,outPtr) == 1)
-            write(fd,inbuff,bytes);
+            {
+                printf("%s",inbuff);
+                pwrite(fd,inbuff,bytes,offset++);
+            }
         printf("done. \n");
-
+        fclose(outPtr);
+        remove(streamCipher);
     }
     else if (enc==2)
         printf("skipping salt generation\n");
@@ -240,7 +245,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 printf("Something went wrong when checking for salt! ");
                 return;
             }  
-            int offset = 0;
+            offset = 0;
             while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
