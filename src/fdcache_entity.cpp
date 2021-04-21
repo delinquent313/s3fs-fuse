@@ -199,16 +199,21 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         if (fwrite(salt,SALTED_STR_LEN,1,outPtr)!=1)
             printf("something went wrong in writing salt to cipher stream!\n");
         printf("done. \n");
-        printf("encrypting...");
+        printf("encrypting...\n");
         while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
         {
             RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
             fwrite(outBuffer, bytes, 1, outPtr);
         }
+        printf("done. \n");
+        printf("resetting pointers to beginin of file. \n");
         fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
         lseek(fd,0,SEEK_SET);
+        printf("writing to file byte by byte")
         while (bytes = fread(inbuff,1,1,outPtr) == 1)
-            write(fd,inbuff,1);
+            write(fd,inbuff,bytes);
+        printf("done. \n");
+
     }
     else if (enc==2)
         printf("skipping salt generation\n");
