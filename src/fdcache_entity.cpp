@@ -169,7 +169,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
 
     //lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
-    FILE *outPtr = fopen("streamCipher","w+");
+    FILE *outPtr = fopen(streamCipher,"w+");
     if (filePtr == NULL)
         return; //return if file could not be opened 
     if (outPtr == NULL)
@@ -209,7 +209,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("resetting pointers to beginin of file. \n");
         fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
         lseek(fd,0,SEEK_SET);
-        printf("writing to file byte by byte")
+        printf("writing to file byte by byte");
         while (bytes = fread(inbuff,1,1,outPtr) == 1)
             write(fd,inbuff,bytes);
         printf("done. \n");
