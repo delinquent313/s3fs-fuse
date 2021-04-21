@@ -211,7 +211,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         lseek(fd,0,SEEK_SET);
         printf("writing to file byte by byte:\n");
         offset = 0;
-        while (bytes = fread(inbuff,1,1,outPtr) == 1)
+        while (bytes = fread(inbuff,blockSize,1,outPtr) == 1) 
             {
                 printf("%s",inbuff);
                 pwrite(fd,inbuff,bytes,offset++);
