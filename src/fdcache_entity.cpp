@@ -199,7 +199,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         if (fwrite(salt,SALTED_STR_LEN,1,outPtr)!=1)
             printf("something went wrong in writing salt to cipher stream!\n");
         printf("done. \n");
-        printf("encrypting...")
+        printf("encrypting...");
         while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
         {
             RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
@@ -216,9 +216,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         {
         //read past Salt if Salted continue as unsalted if not salted
             //check header
-            printf("reading salt... \n")
-            fread(salt,SALTED_STR_LEN,1,filePtr)
-            printf ("done.\n")
+            printf("reading salt... \n");
+            fread(salt,SALTED_STR_LEN,1,filePtr);
+            printf ("done.\n");
             headerStat = isSalted((char *)salt);
             if (headerStat == 1)
             {
@@ -239,7 +239,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
-                pwrite(fd,outbuffer,bytes,offset++);
+                pwrite(fd,outBuffer,bytes,offset++);
             }   
             ftruncate(fd,offset);
 
