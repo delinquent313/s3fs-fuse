@@ -95,6 +95,14 @@ unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 
     printf("generating salted string: %s\n",saltedString);
     return (unsigned char*)saltedString;
 }
+int isSalted (char* file) //pass address of pointer in
+{
+    char *saltFlag = "Salted__";
+    for (int i = 0; i < SALT_LEN; i++)
+        if(saltFlag[i]!=file[i])//not salted return something    
+                return 0;
+    return 1;
+}
 int removeSaltHeader (char* file) //pass address of pointer in
 {
     char *saltFlag = "Salted__";
@@ -121,8 +129,27 @@ void removeSalt (char* file) //pass address of pointer in
     strcpy(file,fileCpy); //overwrite file with 8 less bytes
     return;
 }
+char* getStreamPath()
+{
+    const char *path = ".streamCipher";
+    char *absolutePath = (char *)malloc(sizeof(char)*100);;
+    char c = '/';
+    strcpy(absolutePath, getenv("HOME"));
+    strncat(absolutePath, &c, 1); //adds '/' after {user}
+    absolutePath = strcat(absolutePath,path);
+    printf("path to cipher file: %s\n",absolutePath);
+    return absolutePath;
+}
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for noSalt Encrypting
 {
+    //set key
+    //declared as c string
+    char* rawKey = getKey((const char*)".rc4Key"); 
+    printf("rawKey: %s\n",rawKey);
+    RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
+    printf("initializing key\n");
+    RC4_set_key(key,16,(const unsigned char*)rawKey);
+    printf("rc4 key set\n");
     //fstat fd for length and other variables 
     struct stat sb;
     if (fstat(fd,&sb)==-1)
@@ -134,100 +161,110 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("\tblksize %u\n",sb.st_blksize);
         printf("\tblkcount %u\n",sb.st_blocks);
     }
+    int fileLength = sb.st_size;
+    int blockSize = sb.st_blksize;//used to write block by blockif multpleblocks
 
-
-
+    //get path for streamcipher temp file
+    char *streamCipher = getStreamPath();
 
     //lseek(fd,0,SEEK_END);
     FILE *filePtr = fdopen(fd, "w+");
+    FILE *outPtr = fopen("streamCipher","w+");
     if (filePtr == NULL)
         return; //return if file could not be opened 
+    if (outPtr == NULL)
+        return;
     // fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
     // int fileLength = ftell(filePtr);
     // fseek (filePtr,0,SEEK_SET);
-    int fileLength = sb.st_size;
     printf("fileLength of input file: %d\n",fileLength);
-    /*
-    int multipartThreshold = 1024*8; //8Kb  
-    if (enc == 1 && fileLength>multipartThreshold) //display info to make sure is correct macro for min multipart size
-        {
-            printf("encoding with no salt because file is too large[multipartThreshold=%d ]\n",multipartThreshold);
-            enc = 2; //set function to nosalt encoding mode
-        }
-    */
+
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
+    //unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
-    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
-    unsigned char buffer[1];
+    unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int headerStat;
-    int i= 0;
-    printf("copying file... \n");
-    while (fread(buffer,1,1,filePtr) == 1) //reads through file and copies to fileCpy
-    {
-        fileCpy[i++] = buffer[0];
-    }
-    printf("done.\n");
-    // printf("fileCpy:\n%s\n",fileCpy); //print file copy to mnake sure it is correct
+    int bytes;
+
+
     //if encrypting/////////////
     if (enc==1)
     {
-        //generate salt
-        //sanity check
-        //TODO: add way of checking if first block if first block salt else no salt
-        // headerStat = removeSaltHeader((char *)fileCpy);
-        // if  (headerStat == 1)
-        //     {printf("unexpectedly Salted? \n Warning:continuing may result in unexpected behavior\n\n");}
-        // else if (headerStat == -1)
-        //     {printf("expected: no salt header\n");}    
         printf("generating salt... \n");
         salt = generateSalt(); 
         printf("done. \n");
-
+        printf("writing salt to cipher stream\n");
+        if (fwrite(salt,SALTED_STR_LEN,1,outPtr)!=1)
+            printf("something went wrong in writing salt to cipher stream!\n");
+        printf("done. \n");
+        printf("encrypting...")
+        while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
+        {
+            RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
+            fwrite(outBuffer, bytes, 1, outPtr);
+        }
+        fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
+        lseek(fd,0,SEEK_SET);
+        while (bytes = fread(inbuff,1,1,outPtr) == 1)
+            write(fd,inbuff,1);
     }
     else if (enc==2)
         printf("skipping salt generation\n");
     else//if decrypting 
         {
-        //remove Salt if Salted continue as unsalted if not salted
+        //read past Salt if Salted continue as unsalted if not salted
             //check header
-            headerStat = removeSaltHeader((char *)fileCpy); //remove "Salted__"
+            printf("reading salt... \n")
+            fread(salt,SALTED_STR_LEN,1,filePtr)
+            printf ("done.\n")
+            headerStat = isSalted((char *)salt);
             if (headerStat == 1)
             {
-                printf("salt removed for decrypting\n");
-                fileLength -= SALT_LEN; //reduce file size by size of header
-                fileCpy[fileLength] = '\0';
-                // printf("fileCpy after header check/strip:\n%s\n",fileCpy);
-                if (fstat(fd,&sb)==-1)
-                    perror("stat");
-                else
-                {
-	                printf("\tsize: %ld\n", sb.st_size); 
-	                printf("\tinode: %u\n", sb.st_ino);
-                    printf("\tblksize %u\n",sb.st_blksize);
-                    printf("\tblkcount %u\n",sb.st_blocks);
-                }
+                //Salt header detected
+                printf("Salted header detected");
             }
-            else if (headerStat == -1)
+            else if (headerStat == 0)
+            {
+                rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
                 printf("input is not salted continuing...\n");
+            }
             else 
             {
-                printf("Something went wrong! ");
+                printf("Something went wrong when checking for salt! ");
                 return;
-            }     
+            }  
+            int offset = 0;
+            while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
+            {
+                RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
+                pwrite(fd,outbuffer,bytes,offset++);
+            }   
+            ftruncate(fd,offset);
+
         }
+    delete key;
+    if (fstat(fd,&sb)==-1)
+        perror("stat");
+    else
+    {
+        printf("\tsize: %ld\n", sb.st_size); 
+        printf("\tinode: %u\n", sb.st_ino);
+        printf("\tblksize %u\n",sb.st_blksize);
+        printf("\tblkcount %u\n",sb.st_blocks);
+    }    
+
     ////////////////////////////
 
-    //set key
-    //declared as c string
-    char* rawKey = getKey((const char*)".rc4Key"); 
-    printf("rawKey: %s\n",rawKey);
-    RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
-    printf("initializing key\n");
-    RC4_set_key(key,16,(const unsigned char*)rawKey);
-    printf("rc4 key set\n");
 
+    //key is set 
+    //write to ouputfile which will overwrite 
+    //use read in while loop to go block by block use blocksize RC4 
+
+
+
+/*
     printf("doing encryption\n");
     if (enc == 1 )
     {
@@ -240,7 +277,10 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             printf("\tblksize %u\n",sb.st_blksize);
             printf("\tblkcount %u\n",sb.st_blocks);
         }
+        
+        
         unsigned char *tempFile = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
+        ///////////////////////////////////////////////////////////////////////////////////////////////
         sprintf((char *)tempFile,"%s%s",salt,fileCpy); //adding salt to cpy before encryptiong
         unsigned char * saltedPlainText = tempFile + 8; //puts a pointer 8 address infront of the start of fileCpy C Str
         // printf ("Salted Plain Text:\n%s\n",saltedPlainText);
@@ -249,7 +289,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         // printf("\nPrint outBuffer: \n%s\n",outBuffer);
         sprintf((char *)tempFile,"Salted__%s",outBuffer); //adding salt flag (salted__) to output buffer
         fileLength += 8;
-        printf("\nPrint Salted Ciphertext: \n%s\n",tempFile);
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        // printf("\nPrint Salted Ciphertext: \n%s\n",tempFile);
         pwrite(fd, tempFile, fileLength, 0);
     }
     else if (enc==2)
@@ -274,38 +315,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
         ftruncate(fd,fileLength); 
     }
-    delete key;
-    if (fstat(fd,&sb)==-1)
-        perror("stat");
-    else
-    {
-        printf("\tsize: %ld\n", sb.st_size); 
-        printf("\tinode: %u\n", sb.st_ino);
-        printf("\tblksize %u\n",sb.st_blksize);
-        printf("\tblkcount %u\n",sb.st_blocks);
-    }
-    /*//add salt to begining of outBuffer if encrtypting
-    if (enc==1)
-    {
-        free(fileCpy);
-        fileCpy = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*fileCpy));
-        sprintf((char *)fileCpy,"%s%s",salt,outBuffer);
-        printf("\nPrint Salted Ciphertext: %s\n",fileCpy);
-        pwrite(fd, fileCpy, fileLength + SALTED_STR_LEN, 0);
-        //remove the salted string from the encrypted file. 
-    }
-    //////////////////////////
-    //write RC4 output to file
-
-    else
-    {
-        printf("[file length = %d]Print decoded Ciphertext:\n%s\n",fileLength, outBuffer); //print file copy to mnake sure it is correct
-        
-        pwrite(fd, outBuffer, fileLength, 0); //using pwrite because the s3fs uses p-io operations for compatiblilty
-        ftruncate(fd,fileLength); 
-    }
     */
-
 
 }
 
