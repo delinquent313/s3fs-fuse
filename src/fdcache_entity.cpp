@@ -83,7 +83,6 @@ char* getKey(const char *path)
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
     free(absolutePath);
-    free 
     fileCpy[strlen(fileCpy)] = '\0'; 
     return fileCpy;
 }
