@@ -62,7 +62,7 @@ char* getKey(const char *path)
     absolutePath = strcat(absolutePath,path);
     printf("path to key file: %s\n",absolutePath);
     truncate(absolutePath,16);// make sure to get rid of excess bits in file before we open key should be no greater than 16 characters
-    FILE *filePtr = fopen(absolutePath,"r");s
+    FILE *filePtr = fopen(absolutePath,"r");
     if (filePtr == NULL)
         return "passwordpassword";//if the file is not found use default key
     fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
