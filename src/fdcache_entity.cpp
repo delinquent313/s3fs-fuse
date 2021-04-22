@@ -34,12 +34,14 @@
 #include "autolock.h"
 #include "curl.h"
 
-//added headerfiles for rc4 encyption 
+//added headerfiles for rc4 encyption  
 
-#include<rc4_enc.c>
-#include<rc4_skey.c>
-#include<rc4_local.h>
-#include<openssl/rand.h>
+#include <rc4_enc.c>
+#include <rc4_skey.c>
+#include <rc4_local.h>
+#include <openssl/rand.h>
+#include <openssl/rc4.h>
+#include <openssl/evp.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -145,11 +147,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     //set key
     //declared as c string
     char* rawKey = getKey((const char*)".rc4Key"); 
-    printf("rawKey: %s\n",rawKey);
-    RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
-    printf("initializing key\n");
-    RC4_set_key(key,16,(const unsigned char*)rawKey);
-    printf("rc4 key set\n");
+
     //fstat fd for length and other variables 
     struct stat sb;
     if (fstat(fd,&sb)==-1)
@@ -201,15 +199,30 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     fseek(filePtr,0,SEEK_SET);
 */
     //if encrypting/////////////
+
+
+
+    RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
+    char* hashedKey = (char *)malloc(16*sizeof(*rawKey));
+    printf("rawKey: %s\n",rawKey);
+
+
+    RC4_set_key(key,16,(const unsigned char*)hashedKey);
+    printf("rc4 key set\n");
     if (enc==1)
     {
         printf("generating salt... \n");
         salt = generateSalt(); 
         printf("done. \n");
-        printf("writing salt to cipher stream\n");
         removeSalt((char *)salt);//gets rid of the Salted__
-        printf("print salt befor writing to file:%s ",salt);
-        RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
+        //hash key
+        printf("initializing key\n");
+        if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, strlen(rawKey), 1, hashedKey, NULL) )//needs salt from file if decrypting
+        {
+            printf("something went wrong initializing key\n"); 
+        }
+        
+        //RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
         printf("encrypting...\n");
@@ -251,7 +264,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 //Salt header detected
                 printf("Salted header detected\n"); //pos 16
                 removeSalt((char *)salt);
-                RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//need to decrypt salt in order to get correct output 
+                printf("initializing key\n");
+                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, strlen(rawKey), 1, hashedKey, NULL) )//needs salt from file if decrypting
+                {
+                    printf("something went wrong initializing key\n"); 
+                }
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__" /ignoring salted string in fd
             }
             else if (headerStat == 0)
@@ -269,7 +286,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             while (bytes = read(fd,inbuff,SALTED_STR_LEN)) //reads through 16 byte 
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
-                printf("%s->%s",inbuff,outBuffer);
+                //printf("%s->%s",inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset);
                 offset += bytes; //increment the offset byt 16 or number of bytes read 
             }   
