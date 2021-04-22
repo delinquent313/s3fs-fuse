@@ -206,7 +206,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     unsigned char* hashedKey = (unsigned char *)malloc(16*sizeof(*hashedKey));
     printf("rawKey: %s\n",rawKey);
-    RC4_set_key(key,16,(const unsigned char*)hashedKey);
+    //RC4_set_key(key,16,(const unsigned char*)hashedKey);
     printf("rc4 key set\n");
     if (enc==1)
     {
@@ -221,6 +221,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             printf("something went wrong initializing key\n"); 
         }
         printf("print hashed key:%s\n",hashedKey);
+        RC4_set_key(key,16,(const unsigned char*)hashedKey);
+
         //RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
@@ -268,6 +270,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                     printf("something went wrong initializing key\n"); 
                 }
                 printf("print hashed key:%s\n",hashedKey);
+                RC4_set_key(key,16,(const unsigned char*)hashedKey);
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__XXXXXXXX" /ignoring salted string in fd
             }
             else if (headerStat == 0)
@@ -281,11 +284,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 printf("Something went wrong when checking for salt! ");
                 return;
             }  
+            printf("decrypting...\n");
             offset = 0;
-            while (bytes = read(fd,inbuff,SALTED_STR_LEN)) //reads through 16 byte 
+            while (bytes = read(fd,inbuff,blockSize))
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
-                //printf("%s->%s",inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset);
                 offset += bytes; //increment the offset by 16 or number of bytes read 
             }   
@@ -303,6 +306,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("\tblksize %u\n",sb.st_blksize);
         printf("\tblkcount %u\n",sb.st_blocks);
     }    
+}
 
     ////////////////////////////
 
@@ -366,7 +370,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     }
     */
 
-}
 
 
 
