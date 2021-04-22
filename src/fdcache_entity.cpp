@@ -208,7 +208,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         write(outFd,salt,SALTED_STR_LEN);
         printf("done. \n");
         printf("encrypting...\n");
-        while (bytes = read(fd,inbuff,blockSize) //reads through file block by block
+        while (bytes = read(fd,inbuff,blockSize)) //reads through file block by block
         {
             RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);//write encrypted block to temporary file
             write(outFd,outBuffer,bytes);
