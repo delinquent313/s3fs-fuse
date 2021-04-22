@@ -181,8 +181,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
-    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
-    unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
+    //unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
+    unsigned char* outBuffer = (unsigned char*)malloc((blockSize*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
     //unsigned char* saltStr = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*saltStr));
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
@@ -209,6 +209,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("writing salt to cipher stream\n");
         removeSalt((char *)salt);//gets rid of the Salted__
         printf("print salt befor writing to file:%s ",salt);
+        RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
         printf("encrypting...\n");
