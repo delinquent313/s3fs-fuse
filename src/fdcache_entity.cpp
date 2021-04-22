@@ -255,11 +255,12 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 return;
             }  
             offset = 0;
-            while (bytes = fread(inbuff,SALTED_STR_LEN,1,filePtr) == 1) //reads through 16 byte block
+            while (bytes = read(fd,inbuff,SALTED_STR_LEN)) //reads through 16 byte 
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
                 printf("%s->%s",inbuff,outBuffer);
-                pwrite(fd,outBuffer,bytes,offset++);
+                pwrite(fd,outBuffer,bytes,offset);
+                offset += bytes; //increment the offset byt 16 or number of bytes read 
             }   
             ftruncate(fd,offset);
         }
