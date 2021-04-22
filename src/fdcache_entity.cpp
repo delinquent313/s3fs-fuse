@@ -217,8 +217,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 pwrite(fd,inbuff,bytes,offset++);
             }
         printf("done. \n");
-        fclose(outPtr);
-        remove(streamCipher);
     }
     else if (enc==2)
         printf("skipping salt generation\n");
@@ -251,10 +249,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset++);
             }   
-            ftruncate(fd,offset);
+            //ftruncate(fd,offset);
 
         }
     delete key;
+    fclose(outPtr); //close stream sipher
     if (fstat(fd,&sb)==-1)
         perror("stat");
     else
