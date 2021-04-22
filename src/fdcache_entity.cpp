@@ -221,8 +221,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("done. \n");
         printf("resetting pointers to beginin of file. \n");
         lseek(fd,0,SEEK_SET);
-        //write salted before salted cipher text to fd
-        write(fd,"Salted__",SALT_LEN);
+        //write salted__ before salted cipher text to fd
+        char *saltFlag = "Salted__";
+        write(fd,saltFlag,SALT_LEN);
         lseek(outFd,0,SEEK_SET);
         printf("writing to file block by block:\n");
         offset = 0;
