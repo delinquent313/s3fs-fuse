@@ -61,11 +61,12 @@ char* getKey(const char *path)
     strncat(absolutePath, &c, 1); //adds '/' after {user}
     absolutePath = strcat(absolutePath,path);
     printf("path to key file: %s\n",absolutePath);
-    FILE *filePtr = fopen(absolutePath,"r");
+    truncate(absolutePath,16);// make sure to get rid of excess bits in file before we open key should be no greater than 16 characters
+    FILE *filePtr = fopen(absolutePath,"r");s
     if (filePtr == NULL)
         return "passwordpassword";//if the file is not found use default key
     fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
-    int fileLength = ftell(filePtr);
+    int fileLength = ftell(filePtr) - 1;
     fseek (filePtr,0,SEEK_SET);
     
     char* fileCpy = (char*)malloc(fileLength*sizeof(*fileCpy)); 
@@ -78,9 +79,11 @@ char* getKey(const char *path)
         fileCpy[i++] = buffer[0];
     }
     fclose(filePtr);
-    //maybe free memory if it works :)    
+    //maybe free memory if it works :)   
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
+    free(absolutePath);
+    free 
     fileCpy[strlen(fileCpy)] = '\0'; 
     return fileCpy;
 }
