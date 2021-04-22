@@ -249,7 +249,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             if (headerStat == 1)
             {
                 //Salt header detected
-                removeSalt(salt);
+                removeSalt((char *)salt);
                 RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//need to decrypt salt in order to get correct output 
                 lseek(fd, SALTED_LEN_STR, SEEK_SET); //move ptr after "Salted__" /ignoring salted string in fd
                 printf("Salted header detected\n"); //pos 16
