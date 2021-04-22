@@ -174,19 +174,23 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         return; //return if file could not be opened 
     if (outPtr == NULL)
         return;
-    // fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
-    // int fileLength = ftell(filePtr);
-    // fseek (filePtr,0,SEEK_SET);
+    
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
-    //unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
+    unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
     int headerStat;
     int bytes;
     int offset;
+    char buffer;
+    while(fread(buffer,1,1,filePtr))
+    {
+        fileCpy[i++] = buffer;
+    }
+    fseek(filePtr,0,SEEK_SET);
 
     //if encrypting/////////////
     if (enc==1)
@@ -207,7 +211,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("done. \n");
         printf("resetting pointers to beginin of file. \n");
         fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
-        lseek(fd,0,SEEK_SET);
         printf("writing to file byte by byte:\n");
         offset = 0;
         while (bytes = fread(inbuff,blockSize,1,outPtr) == 1) 
@@ -224,14 +227,14 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         //read past Salt if Salted continue as unsalted if not salted
             //check header
             printf("reading salt... \n");
-            fread(salt,SALTED_STR_LEN,1,outPtr);
+            fread(salt,SALTED_STR_LEN,1,filePtr);
             printf("dbg: print header: %s\n", salt);
             printf ("done.\n");
             headerStat = isSalted((char *)salt);
             if (headerStat == 1)
             {
                 //Salt header detected
-                fseek(outPtr, SALT_LEN, SEEK_SET); //move ptr after "Salted__" to encrypted bytes
+                fseek(filePtr, SALT_LEN, SEEK_SET); //move ptr after "Salted__" 
                 printf("Salted header detected"); //pos 8
             }
             else if (headerStat == 0)
