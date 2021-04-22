@@ -249,24 +249,23 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             if (headerStat == 1)
             {
                 //Salt header detected
+                printf("Salted header detected\n"); //pos 16
                 removeSalt((char *)salt);
                 RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//need to decrypt salt in order to get correct output 
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__" /ignoring salted string in fd
-                printf("Salted header detected\n"); //pos 16
-                offset = SALTED_STR_LEN;
             }
             else if (headerStat == 0)
             {
                 // rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
                 lseek(fd, 0, SEEK_SET);
                 printf("input is not salted. continuing\n"); //pos 0
-                offset = 0;
             }
             else 
             {
                 printf("Something went wrong when checking for salt! ");
                 return;
             }  
+            offset = 0;
             while (bytes = read(fd,inbuff,SALTED_STR_LEN)) //reads through 16 byte 
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
