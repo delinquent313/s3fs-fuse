@@ -222,7 +222,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         while (bytes = read(outFd,inbuff,blockSize)) 
             {
                 printf("%s",inbuff);
-                pwrite(fd,inbuff,bytes,offset++);
+                pwrite(fd,inbuff,bytes,offset);
+                offset +=bytes;
             }
         printf("done. \n");
     }
@@ -264,6 +265,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             }   
             ftruncate(fd,offset);
         }
+    remove(streamCipher); //need to either clear or delete the temp file for decryption
     delete key;
     // fclose(outPtr); //close stream sipher
     if (fstat(fd,&sb)==-1)
