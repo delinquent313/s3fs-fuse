@@ -208,7 +208,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("done. \n");
         printf("writing salt to cipher stream\n");
         removeSalt((char *)salt);//gets rid of the Salted__
-        print("print salt befor writing to file:%s ",salt);
+        printf("print salt befor writing to file:%s ",salt);
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
         printf("encrypting...\n");
