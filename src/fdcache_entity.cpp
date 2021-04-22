@@ -226,7 +226,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         write(fd,saltFlag,SALT_LEN);
         lseek(outFd,0,SEEK_SET);
         printf("writing to file block by block:\n");
-        offset = 0;
+        offset = SALT_LEN; //start offset at 8 to account for "Salted__"
         while (bytes = read(outFd,inbuff,blockSize)) 
             {
                 printf("%s",inbuff);
