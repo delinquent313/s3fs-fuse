@@ -203,7 +203,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
 
 
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
-    char* hashedKey = (char *)malloc(16*sizeof(*rawKey));
+    unsigned char* hashedKey = (unsigned char *)malloc(16*sizeof(*hashedKey));
     printf("rawKey: %s\n",rawKey);
 
 
