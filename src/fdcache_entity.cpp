@@ -186,10 +186,12 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int bytes;
     int offset;
     char buffer;
-    while(fread(buffer,1,1,filePtr))
+    int i = 0;
+    while(fread((void*)buffer,1,1,filePtr))
     {
         fileCpy[i++] = buffer;
     }
+    printf("%d iterations for file copy\n",i-1);
     fseek(filePtr,0,SEEK_SET);
 
     //if encrypting/////////////
