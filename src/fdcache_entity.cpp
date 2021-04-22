@@ -221,7 +221,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         {
             printf("something went wrong initializing key\n"); 
         }
-        
+        printf("print hashed key:%s\n",hashedKey);
         //RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
@@ -269,6 +269,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 {
                     printf("something went wrong initializing key\n"); 
                 }
+                printf("print hashed key:%s\n",hashedKey);
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__" /ignoring salted string in fd
             }
             else if (headerStat == 0)
