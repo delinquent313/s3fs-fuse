@@ -245,7 +245,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             }
             else if (headerStat == 0)
             {
-                rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
+                // rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
+                lseek(fd, 0, SEEK_SET);
                 printf("input is not salted. continuing\n"); //pos 0
             }
             else 
@@ -263,7 +264,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             ftruncate(fd,offset);
         }
     delete key;
-    fclose(outPtr); //close stream sipher
+    // fclose(outPtr); //close stream sipher
     if (fstat(fd,&sb)==-1)
         perror("stat");
     else
