@@ -182,7 +182,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
     //unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
-    unsigned char* outBuffer = (unsigned char*)malloc((blockSize*sizeof(*outBuffer));
+    unsigned char* outBuffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
     //unsigned char* saltStr = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*saltStr));
     unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
