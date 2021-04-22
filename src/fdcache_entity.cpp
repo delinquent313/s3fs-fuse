@@ -81,6 +81,7 @@ char* getKey(const char *path)
     //maybe free memory if it works :)    
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
+    fileCpy[16] = '/0';
     return fileCpy;
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
