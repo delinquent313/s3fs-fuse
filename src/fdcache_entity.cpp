@@ -251,19 +251,20 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 //Salt header detected
                 lseek(fd, SALT_LEN, SEEK_SET); //move ptr after "Salted__" 
                 printf("Salted header detected"); //pos 8
+                offset = SALT_LEN;
             }
             else if (headerStat == 0)
             {
                 // rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
                 lseek(fd, 0, SEEK_SET);
                 printf("input is not salted. continuing\n"); //pos 0
+                offset = 0;
             }
             else 
             {
                 printf("Something went wrong when checking for salt! ");
                 return;
             }  
-            offset = 0;
             while (bytes = read(fd,inbuff,SALTED_STR_LEN)) //reads through 16 byte 
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
