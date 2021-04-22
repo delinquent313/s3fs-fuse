@@ -123,10 +123,10 @@ int removeSaltHeader (char* file) //pass address of pointer in
 }
 void removeSalt (char* file) //pass address of pointer in
 {
-    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALT_LEN)); //allocate size of file - 16
-    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALT_LEN));
+    char *fileCpy = (char *)malloc(sizeof(char)*(8)); //allocate size of file - 16 //////////changing this to hard 8 bits
+    printf("[memory alocated to fileCpy; size: %d]\n",(8));
     //Salted__ needs to be removed from file
-    memcpy(fileCpy,&file[SALT_LEN],strlen(file)-SALT_LEN); //copy contents without salt to fileCpy
+    memcpy(fileCpy,&file[SALT_LEN],8); //copy contents without salt to fileCpy
     printf("[memcpy file to copy without the first 8 bits (SALT);]\n");
     printf("copy: \n%s\n", fileCpy);
     strcpy(file,fileCpy); //overwrite file with 8 less bytes
