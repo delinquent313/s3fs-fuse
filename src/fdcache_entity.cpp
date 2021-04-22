@@ -178,7 +178,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     // int fileLength = ftell(filePtr);
     // fseek (filePtr,0,SEEK_SET);
     printf("fileLength of input file: %d\n",fileLength);
-
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
     //unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
@@ -200,7 +199,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             printf("something went wrong in writing salt to cipher stream!\n");
         printf("done. \n");
         printf("encrypting...\n");
-        while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
+        while (bytes = fread(inbuff,blockSize,1,outPtr) == 1) //reads through file block by block
         {
             RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
             fwrite(outBuffer, bytes, 1, outPtr);
@@ -225,18 +224,20 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         //read past Salt if Salted continue as unsalted if not salted
             //check header
             printf("reading salt... \n");
-            fread(salt,SALTED_STR_LEN,1,filePtr);
+            fread(salt,SALTED_STR_LEN,1,outPtr);
+            printf("dbg: print header: %s\n", salt);
             printf ("done.\n");
             headerStat = isSalted((char *)salt);
             if (headerStat == 1)
             {
                 //Salt header detected
-                printf("Salted header detected");
+                fseek(outPtr, SALT_LEN, SEEK_SET); //move ptr after "Salted__" to encrypted bytes
+                printf("Salted header detected"); //pos 8
             }
             else if (headerStat == 0)
             {
                 rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
-                printf("input is not salted continuing...\n");
+                printf("input is not salted. continuing\n"); //pos 0
             }
             else 
             {
@@ -244,9 +245,10 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 return;
             }  
             offset = 0;
-            while (bytes = fread(inbuff,blockSize,1,filePtr) == 1) //reads through file block by block
+            while (bytes = fread(inbuff,SALTED_STR_LEN,1,filePtr) == 1) //reads through 16 byte block
             {
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
+                printf("%s->%s",inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset++);
             }   
             //ftruncate(fd,offset);
