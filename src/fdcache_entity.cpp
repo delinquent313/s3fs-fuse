@@ -268,11 +268,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                     printf("something went wrong initializing key\n"); 
                 }
                 printf("print hashed key:%s\n",hashedKey);
-                lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__" /ignoring salted string in fd
+                lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__XXXXXXXX" /ignoring salted string in fd
             }
             else if (headerStat == 0)
             {
-                // rewind (filePtr); //rewind to begining of file because there was no salt and continuing as unsalted
+                 //rewind to begining of file because there was no salt and continuing as unsalted
                 lseek(fd, 0, SEEK_SET);
                 printf("input is not salted. continuing\n"); //pos 0
             }
@@ -287,7 +287,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
                 //printf("%s->%s",inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset);
-                offset += bytes; //increment the offset byt 16 or number of bytes read 
+                offset += bytes; //increment the offset by 16 or number of bytes read 
             }   
             ftruncate(fd,offset);
         }
