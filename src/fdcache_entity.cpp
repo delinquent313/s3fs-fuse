@@ -81,7 +81,7 @@ char* getKey(const char *path)
     //maybe free memory if it works :)    
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
-    fileCpy[16] = '/0';
+    fileCpy[16] = '\0';
     return fileCpy;
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
@@ -206,8 +206,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     unsigned char* hashedKey = (unsigned char *)malloc(16*sizeof(*hashedKey));
     printf("rawKey: %s\n",rawKey);
-
-
     RC4_set_key(key,16,(const unsigned char*)hashedKey);
     printf("rc4 key set\n");
     if (enc==1)
@@ -237,13 +235,12 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         lseek(fd,0,SEEK_SET);
         //write salted__ before salted cipher text to fd
         char *saltFlag = "Salted__";
-        write(fd,saltFlag,SALT_LEN);
         lseek(outFd,0,SEEK_SET);
         printf("writing to file block by block:\n");
+        write(fd,saltFlag,SALT_LEN);
         offset = SALT_LEN; //start offset at 8 to account for "Salted__"
         while (bytes = read(outFd,inbuff,blockSize)) 
             {
-                printf("%s",inbuff);
                 pwrite(fd,inbuff,bytes,offset);
                 offset +=bytes;
             }
@@ -264,7 +261,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             {
                 //Salt header detected
                 printf("Salted header detected\n"); //pos 16
-                removeSalt((char *)salt);
+                removeSalt((char *)salt);//removes Salted__
                 printf("initializing key\n");
                 if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, strlen(rawKey), 1, hashedKey, NULL) )//needs salt from file if decrypting
                 {
