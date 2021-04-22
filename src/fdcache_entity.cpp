@@ -184,7 +184,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     unsigned char* fileCpy = (unsigned char*)malloc(fileLength*sizeof(*fileCpy)); 
     unsigned char* outBuffer = (unsigned char*)malloc((fileLength+SALTED_STR_LEN)*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
-    unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
+    unsigned char* saltStr = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*saltStr));
+    unsigned char* salt = (unsigned char*)malloc(SALT_LEN*sizeof(*salt));
+
     int headerStat;
     int bytes;
     int offset;
@@ -205,7 +207,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         salt = generateSalt(); 
         printf("done. \n");
         printf("writing salt to cipher stream\n");
-        write(outFd,salt,SALTED_STR_LEN);
+        removeSalt((char *)salt);//gets rid of the Salted__
+        print("print salt befor writing to file:%s ",salt);
+        write(outFd,salt,SALT_LEN);
         printf("done. \n");
         printf("encrypting...\n");
         while (bytes = read(fd,inbuff,blockSize)) //reads through file block by block
@@ -216,6 +220,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("done. \n");
         printf("resetting pointers to beginin of file. \n");
         lseek(fd,0,SEEK_SET);
+        //write salted before salted cipher text to fd
+        write(fd,"Salted__",SALT_LEN);
         lseek(outFd,0,SEEK_SET);
         printf("writing to file block by block:\n");
         offset = 0;
