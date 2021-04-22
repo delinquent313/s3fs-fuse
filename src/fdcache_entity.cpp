@@ -166,15 +166,18 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
 
     //get path for streamcipher temp file
     char *streamCipher = getStreamPath();
-
+    int outFd = open(streamCipher, O_CREAT | O_RDWR, 0664);
+    
+    
     //lseek(fd,0,SEEK_END);
+    /*
     FILE *filePtr = fdopen(fd, "w+");
     FILE *outPtr = fopen(streamCipher,"w+");
     if (filePtr == NULL)
         return; //return if file could not be opened 
     if (outPtr == NULL)
         return;
-    
+    */
     printf("fileLength of input file: %d\n",fileLength);
     // cast required in C++ but not in C 
     //unsigned char* outBuffer = (unsigned char*)malloc(fileLength*sizeof(*outBuffer));
@@ -201,21 +204,21 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         salt = generateSalt(); 
         printf("done. \n");
         printf("writing salt to cipher stream\n");
-        if (fwrite(salt,SALTED_STR_LEN,1,outPtr)!=1)
-            printf("something went wrong in writing salt to cipher stream!\n");
+        write(outFd,salt,SALTED_STR_LEN);
         printf("done. \n");
         printf("encrypting...\n");
-        while (bytes = fread(inbuff,blockSize,1,outPtr) == 1) //reads through file block by block
+        while (bytes = read(fd,inbuff,blockSize) //reads through file block by block
         {
-            RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);
-            fwrite(outBuffer, bytes, 1, outPtr);
+            RC4(key,bytes,(const unsigned char*)inbuff,outBuffer);//write encrypted block to temporary file
+            write(outFd,outBuffer,bytes);
         }
         printf("done. \n");
         printf("resetting pointers to beginin of file. \n");
-        fseek(outPtr, 0, SEEK_SET);//go to begining of stream cipher to write to file of fd fd
-        printf("writing to file byte by byte:\n");
+        lseek(fd,0,SEEK_SET);
+        lseek(outFd,0,SEEK_SET);
+        printf("writing to file block by block:\n");
         offset = 0;
-        while (bytes = fread(inbuff,blockSize,1,outPtr) == 1) 
+        while (bytes = read(outFd,inbuff,blockSize)) 
             {
                 printf("%s",inbuff);
                 pwrite(fd,inbuff,bytes,offset++);
@@ -229,14 +232,14 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         //read past Salt if Salted continue as unsalted if not salted
             //check header
             printf("reading salt... \n");
-            fread(salt,SALTED_STR_LEN,1,filePtr);
+            read(fd,salt,SALTED_STR_LEN);
             printf("dbg: print header: %s\n", salt);
             printf ("done.\n");
             headerStat = isSalted((char *)salt);
             if (headerStat == 1)
             {
                 //Salt header detected
-                fseek(filePtr, SALT_LEN, SEEK_SET); //move ptr after "Salted__" 
+                lseek(fd, SALT_LEN, SEEK_SET); //move ptr after "Salted__" 
                 printf("Salted header detected"); //pos 8
             }
             else if (headerStat == 0)
@@ -256,8 +259,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 printf("%s->%s",inbuff,outBuffer);
                 pwrite(fd,outBuffer,bytes,offset++);
             }   
-            //ftruncate(fd,offset);
-
+            ftruncate(fd,offset);
         }
     delete key;
     fclose(outPtr); //close stream sipher
