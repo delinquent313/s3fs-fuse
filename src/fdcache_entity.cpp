@@ -177,7 +177,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     if (enc==1)
     {
         printf("generating salt... \n");
-        strncpy(salt, generateSalt(), SALTED_STR_LEN); 
+        strncpy((char *)salt, (const char *)generateSalt(), SALTED_STR_LEN); 
         printf("done. \n");
         removeSalt((char *)salt);//gets rid of the Salted__
         salt[SALT_LEN] = '\0'; //sanatizing the c string ensuring it is 8 bits long
