@@ -165,7 +165,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         printf("\tblksize %u\n",sb.st_blksize);
         printf("\tblkcount %u\n",sb.st_blocks);
     }
-    int fileLength = sb.st_size;
+    //int fileLength = sb.st_size;
     int blockSize = sb.st_blksize;//used to write block by blockif multpleblocks
 
     //get path for streamcipher temp file
@@ -173,7 +173,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int outFd = open(streamCipher, O_CREAT | O_RDWR, 0664);
     
 
-    printf("fileLength of input file: %d\n",fileLength);
+    //printf("fileLength of input file: %d\n",fileLength);
 
     unsigned char* outBuffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
@@ -236,6 +236,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             lseek(fd,0,SEEK_SET);
             printf("reading salt... \n");
             read(fd,salt,SALTED_STR_LEN);
+            salt[SALTED_STR_LEN] = '\0'; //sanatizing salt string
             printf("dbg: print header: %s\n", salt);
             printf ("done.\n");
             headerStat = isSalted((char *)salt);
@@ -244,6 +245,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 //Salt header detected
                 printf("Salted header detected\n"); //pos 16
                 removeSalt((char *)salt);//removes Salted__
+                salt[SALT_LEN] = '\0';
                 printf("initializing key\n");
                 if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, strlen(rawKey), 1, hashedKey, NULL) )//needs salt from file if decrypting
                 {
