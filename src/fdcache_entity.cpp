@@ -82,7 +82,6 @@ char* getKey(const char *path)
     //maybe free memory if it works :)   
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
-    free(absolutePath);
     return fileCpy;
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
@@ -182,13 +181,13 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int offset;
     char buffer[1];
     int i = 0;
-
     //if encrypting/////////////
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     unsigned char* hashedKey = (unsigned char *)malloc(16*sizeof(*hashedKey));
     if (enc==1)
     {
         printf("generating salt... \n");
+        
         salt = generateSalt(); 
         printf("done. \n");
         removeSalt((char *)salt);//gets rid of the Salted__
@@ -200,10 +199,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         }
         printf("print hashed key:%s\n",hashedKey);
         RC4_set_key(key,keySize,(const unsigned char*)hashedKey);
-        free(hashedKey);
         //RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
-        free(salt);
         printf("done. \n");
         printf("encrypting...\n");
         while (bytes = read(fd,inbuff,blockSize)) //reads through file block by block
@@ -232,6 +229,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     else//if decrypting 
         {
             //check header
+            lseek(fd,0,SEEK_SET);
             printf("reading salt... \n");
             read(fd,salt,SALTED_STR_LEN);
             printf("dbg: print header: %s\n", salt);
@@ -247,10 +245,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 {
                     printf("something went wrong initializing key\n"); 
                 }
-                free(salt);
                 printf("print hashed key:%s\n",hashedKey);
                 RC4_set_key(key,keySize,(const unsigned char*)hashedKey);
-                free(hashedKey);
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__XXXXXXXX" /ignoring salted string in fd
             }
             else if (headerStat == 0)
@@ -275,9 +271,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         }
     remove(streamCipher); //need to either clear or delete the temp file for decryption
     delete key;
-    free(inbuff);
-    free(outBuffer);
-    free(buffer);
     if (fstat(fd,&sb)==-1)
         perror("stat");
     else
