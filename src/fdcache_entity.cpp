@@ -144,7 +144,7 @@ printf("start of encrypt_file function\n");
 printf("var declaration\n");
     RC4_KEY *key = new RC4_KEY;
     unsigned char* salt = (unsigned char *)malloc(SALT_LEN*sizeof(*salt));
-    unsigned char* salted__ = (unsigned char *)malloc(SALTED_STR_LEN*sizeof(*salted__));
+    unsigned char* salted__ = (unsigned char *)malloc((1 + SALTED_STR_LEN)*sizeof(*salted__));
     unsigned char* hashedKey = (unsigned char *)malloc(FIXED_KEY_SIZE*sizeof(*hashedKey));
     unsigned char* inBuf = (unsigned char *)malloc(blockSize*sizeof(*inBuf));
     unsigned char* outBuf = (unsigned char *)malloc(blockSize*sizeof(*outBuf));
@@ -238,9 +238,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int blockSize = sb.st_blksize;//used to write block by blockif multpleblocks
     //get path for streamcipher temp file
     char *streamCipher = getStreamPath();
-printf("before open tempfile \n");
     int outFd = open(streamCipher, O_CREAT | O_RDWR, 0664);
-printf("before buffer mem alocation\n");
     unsigned char* buffer = (unsigned char*)malloc(blockSize*sizeof(*buffer)); 
     int bytes;
     int offset;
