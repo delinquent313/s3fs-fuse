@@ -197,7 +197,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         salt[SALT_LEN] = '\0'; //sanatizing the c string ensuring it is 8 bits long
         //hash key
         printf("initializing key\n");
-        if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
+        if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
         {
             printf("something went wrong initializing key\n"); 
         }
@@ -247,7 +247,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 removeSalt((char *)salt);//removes Salted__
                 salt[SALT_LEN] = '\0';
                 printf("initializing key\n");
-                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
+                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
                 {
                     printf("something went wrong initializing key\n"); 
                 }
