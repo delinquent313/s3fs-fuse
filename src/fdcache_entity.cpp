@@ -1245,12 +1245,11 @@ int FdEntity::Load(off_t start, off_t size, bool lock_already_held, bool is_modi
           if(0 != result){
               break;
           }
-          //encrypion and decryption using rc4 and key from file/or
-          S3FS_PRN_INFO3("starting rc4 cyrptography... [path=%s][fd=%d][offset=%lld][size=%lld]", path.c_str(), fd, static_cast<long long int>(start), static_cast<long long int>(size));
-          rc4(fd, 0);//decrypt
           // Set loaded flag
           pagelist.SetPageLoadedStatus(iter->offset, iter->bytes, (is_modified_flag ? PageList::PAGE_LOAD_MODIFIED : PageList::PAGE_LOADED));
         }
+        //encrypion and decryption using rc4 and key from file/or
+        rc4(fd, 0);//decrypt
         PageList::FreeList(unloaded_list);
     }
     return result;
