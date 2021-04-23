@@ -138,7 +138,7 @@ void encrypt_file(int ifd, int ofd, char*rawKey,int mode)
     if (fstat(ifd,&sb)==-1)
         perror("stat");
     int blockSize = sb.st_blksize; // block size for stream writin
-    int keySize = strlen(rawKey);
+    //int keySize = strlen(rawKey);
     // RC4_KEY* key = (RC4_KEY*)malloc(sizeof(*key));
     RC4_KEY *key = new RC4_KEY;
     unsigned char* salt = (unsigned char *)malloc(SALT_LEN*sizeof(*salt));
@@ -158,23 +158,26 @@ void encrypt_file(int ifd, int ofd, char*rawKey,int mode)
             write(ofd,salted__,SALTED_STR_LEN);
             offset+=SALTED_STR_LEN;
         }
-
     else if(mode==2)//no salt 
         {
             EVP_BytesToKey(EVP_rc4(), EVP_sha256(), NULL, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL);
         }
     //set key
+printf("before rc4 set key\n");
     RC4_set_key(key,FIXED_KEY_SIZE,(const unsigned char*)hashedKey);
+printf("after rc4 set key\n");
 
     //do encryption
-    int bytes;
+printf("before encrption to ofd (inside encrypt_file)\n");
     
+    int bytes;
     while (bytes = read(ifd,inBuf,blockSize))
     {
         RC4(key, bytes, inBuf, outBuf);
         write(ofd, outBuf, bytes);
         offset += bytes;
     }
+printf("before encrption to ofd (inside encrypt_file)\n");
     ftruncate(ofd,offset);//getting extra bytes on nosalt so using truncate
     delete key;
 }
@@ -184,7 +187,7 @@ void decrypt_file(int ifd, int ofd, char*rawKey, int mode)
     if (fstat(ifd,&sb)==-1)
         perror("stat");
     int blockSize = sb.st_blksize; // block size for stream writin
-    int keySize = strlen(rawKey);
+    //int keySize = strlen(rawKey);
     RC4_KEY *key = new RC4_KEY; //cpp way of making pointer to struct
     //RC4_KEY* key = (RC4_KEY*)malloc(sizeof(*key));
     unsigned char* salt = (unsigned char *)malloc(SALT_LEN*sizeof(*salt));
@@ -235,7 +238,6 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     unsigned char* buffer = (unsigned char*)malloc(blockSize*sizeof(*buffer)); 
     int bytes;
     int offset;
-    int i = 0;
     switch(enc) {
        case 1 :
             encrypt_file(fd,outFd,rawKey,enc);
@@ -1334,7 +1336,7 @@ int FdEntity::Load(off_t start, off_t size, bool lock_already_held, bool is_modi
           }
           // Set loaded flag
           //encrypion and decryption using rc4 and key from file/or
-          rc4(fd, 0);//decrypt
+          rc4(fd, 3);//decrypt
           pagelist.SetPageLoadedStatus(iter->offset, iter->bytes, (is_modified_flag ? PageList::PAGE_LOAD_MODIFIED : PageList::PAGE_LOADED));
         }
         PageList::FreeList(unloaded_list);
