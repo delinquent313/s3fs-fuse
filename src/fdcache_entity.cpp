@@ -67,7 +67,7 @@ char* getKey(const char *path)
     if (filePtr == NULL)
         return "passwordpassword";//if the file is not found use default key
     fseek (filePtr,0,SEEK_END); // get file length with fseek and ftell system calls
-    int fileLength = ftell(filePtr) - 1;
+    int fileLength = ftell(filePtr);
     fseek (filePtr,0,SEEK_SET);
     
     char* fileCpy = (char*)malloc(fileLength*sizeof(*fileCpy)); 
@@ -194,6 +194,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         salt = generateSalt(); 
         printf("done. \n");
         removeSalt((char *)salt);//gets rid of the Salted__
+        salt[SALT_LEN] = '\0'; //sanatizing the c string ensuring it is 8 bits long
         //hash key
         printf("initializing key\n");
         if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
