@@ -51,7 +51,7 @@
 
 #define SALTED_STR_LEN 16
 #define SALT_LEN 8
-
+#define FIXED_KEY_SIZE 16
 
 char* getKey(const char *path)
 {
@@ -86,7 +86,7 @@ char* getKey(const char *path)
     fileCpy[fileLength] = '\0'; //ensure the key is the correct size for strlen function
     return fileCpy;
 }
-unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
+/*unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
 {
     unsigned char* salt = (unsigned char *)malloc(sizeof(unsigned char)*SALT_LEN);
     char* saltedString = (char *)malloc(sizeof(char)*(SALT_LEN+SALTED_STR_LEN));
@@ -119,7 +119,7 @@ void removeSalt (char* file) //pass address of pointer in
     printf("copy: \n%s\n", fileCpy);
     strcpy(file,fileCpy); //overwrite file with 8 less bytes
     return;
-}
+} */
 char* getStreamPath()
 {
     const char *path = ".streamCipher";
@@ -131,46 +131,140 @@ char* getStreamPath()
     printf("path to cipher file: %s\n",absolutePath);
     return absolutePath;
 }
+void encrypt_file(int ifd, int ofd, char*rawKey,int mode)
+{
+    struct stat sb;
+    if (fstat(ifd,&sb)==-1)
+        perror("stat");
+    int blockSize = sb.st_blksize; // block size for stream writin
+    int keySize = strlen(rawKey);
+    // RC4_KEY* key = (RC4_KEY*)malloc(sizeof(*key));
+    RC4_KEY *key = new RC4_KEY;
+    unsigned char* salt = (unsigned char *)malloc(SALT_LEN*sizeof(*salt));
+    unsigned char* salted__ = (unsigned char *)malloc(SALTED_STR_LEN*sizeof(*salted__));
+    unsigned char* hashedKey = (unsigned char *)malloc(FIXED_KEY_SIZE*sizeof(*hashedKey));
+    unsigned char* inBuf = (unsigned char *)malloc(blockSize*sizeof(*inBuf));
+    unsigned char* outBuf = (unsigned char *)malloc(blockSize*sizeof(*outBuf));
+
+    int offset = 0;
+    //generate key
+    if (mode==1) //we generate salt
+        {
+            RAND_bytes(salt, SALT_LEN);
+            EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL);
+            //salt output
+            sprintf((char *)salted__,"Salted__%s",(char *)salt);
+            write(ofd,salted__,SALTED_STR_LEN);
+            offset+=SALTED_STR_LEN;
+        }
+
+    else if(mode==2)//no salt 
+        {
+            EVP_BytesToKey(EVP_rc4(), EVP_sha256(), NULL, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL);
+        }
+    //set key
+    RC4_set_key(key,FIXED_KEY_SIZE,(const unsigned char*)hashedKey);
+
+    //do encryption
+    int bytes;
+    
+    while (bytes = read(ifd,inBuf,blockSize))
+    {
+        RC4(key, bytes, inBuf, outBuf);
+        write(ofd, outBuf, bytes);
+        offset += bytes;
+    }
+    ftruncate(ofd,offset);//getting extra bytes on nosalt so using truncate
+}
+void decrypt_file(int ifd, int ofd, char*rawKey, int mode)
+{
+    struct stat sb;
+    if (fstat(ifd,&sb)==-1)
+        perror("stat");
+    int blockSize = sb.st_blksize; // block size for stream writin
+    int keySize = strlen(rawKey);
+    RC4_KEY *key = new RC4_KEY; //cpp way of making pointer to struct
+    //RC4_KEY* key = (RC4_KEY*)malloc(sizeof(*key));
+    unsigned char* salt = (unsigned char *)malloc(SALT_LEN*sizeof(*salt));
+    unsigned char* salted__ = (unsigned char *)malloc(SALTED_STR_LEN*sizeof(*salted__));
+    unsigned char* hashedKey = (unsigned char *)malloc(FIXED_KEY_SIZE*sizeof(*hashedKey));
+    unsigned char* inBuf = (unsigned char *)malloc(blockSize*sizeof(*inBuf));
+    unsigned char* outBuf = (unsigned char *)malloc(blockSize*sizeof(*outBuf));
+
+    //get salt from ifd
+
+    if (mode == 3)
+        {
+            lseek(ifd,0,SEEK_SET);
+            read(ifd, salted__, SALTED_STR_LEN);
+            for(int i = 8; i < SALTED_STR_LEN; i++)
+                salt[i-8] = salted__[i]; 
+            salt = salted__ + SALT_LEN; //assignes only salt bytes
+            EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL);
+        }
+    else if (mode == 4)
+        EVP_BytesToKey(EVP_rc4(), EVP_sha256(), NULL, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL);
+    //set key
+    RC4_set_key(key,FIXED_KEY_SIZE,(const unsigned char*)hashedKey);
+    //do decryption
+    int bytes;
+    int offset = 0;
+    while (bytes = read(ifd,inBuf,blockSize))
+    {
+        RC4(key, bytes, inBuf, outBuf);
+        write(ofd, outBuf, bytes);
+        offset += bytes;
+    }
+    ftruncate(ofd,offset);//should be correct size since file is only appended new data but just incase;
+}
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for noSalt Encrypting
 {
     //set key
     //declared as c string
     char* rawKey = getKey((const char*)".rc4Key"); 
-    int keySize = strlen(rawKey); 
-
-    printf("rawKey: %s\n",rawKey);
-    printf ("key length: %d\n",keySize);
-    //fstat fd for length and other variables 
     struct stat sb;
     if (fstat(fd,&sb)==-1)
         perror("stat");
-    else
-    {
-	    printf("\tsize: %ld\n", sb.st_size); 
-	    printf("\tinode: %lu\n", sb.st_ino);
-        printf("\tblksize %lu\n",sb.st_blksize);
-        printf("\tblkcount %lu\n",sb.st_blocks);
-    }
-    //int fileLength = sb.st_size;
     int blockSize = sb.st_blksize;//used to write block by blockif multpleblocks
-
     //get path for streamcipher temp file
     char *streamCipher = getStreamPath();
     int outFd = open(streamCipher, O_CREAT | O_RDWR, 0664);
-    
-
-    //printf("fileLength of input file: %d\n",fileLength);
-
-    unsigned char* outBuffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer));
-    unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
-    //unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
-    unsigned char salt[SALTED_STR_LEN];
-    int headerStat;
+    unsigned char* buffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer)); 
     int bytes;
     int offset;
-    char buffer[1];
     int i = 0;
-    //if encrypting/////////////
+    switch(enc) {
+       case 1 :
+            encrypt_file(fd,outfd,rawKey,enc)
+            break;
+       case 2 :
+            encrypt_file(fd,outfd,rawKey,enc)
+            break;
+       case 3 :
+            decrypt_file(fd,outfd,rawKey,enc)
+            break;
+        case 4 :
+            decrypt_file(fd,outfd,rawKey,enc)
+            break;
+        default :
+            printf("Invalid encoding mode\n" );
+            break;
+    }
+    //overwrite fd with outfd
+    lseek(outFd,0,SEEK_SET);
+    lseek(fd,0,SEEK_SET);
+    offset = 0;
+    while(bytes = read(outFd,buffer,blockSize))
+        {
+            write(fd,buffer,bytes);
+            offset+=bytes;
+        }
+    ftruncate(fd,offset);
+    close(outFd)
+    remove(streamCipher); //need to either clear or delete the temp file for decryption
+    delete key;
+}
+    /*//if encrypting/////////////
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
     unsigned char hashedKey[16];
     //unsigned char* hashedKey = (unsigned char *)malloc(keySize*sizeof(*hashedKey));
@@ -183,12 +277,12 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
         salt[SALT_LEN] = '\0'; //sanatizing the c string ensuring it is 8 bits long
         //hash key
         printf("initializing key\n");
-        if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
+        if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL) )//needs salt from file if decrypting
         {
             printf("something went wrong initializing key\n"); 
         }
         printf("print hashed key:%s\n",hashedKey);
-        RC4_set_key(key,keySize,(const unsigned char*)hashedKey);
+        RC4_set_key(key,FIXED_KEY_SIZE,(const unsigned char*)hashedKey);
         //RC4(key,SALT_LEN,(const unsigned char*)salt,outBuffer);//write encrypted block to temporary file
         write(outFd,salt,SALT_LEN);
         printf("done. \n");
@@ -233,13 +327,13 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 removeSalt((char *)salt);//removes Salted__
                 salt[SALT_LEN] = '\0';
                 printf("initializing key\n");
-                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
+                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), (const unsigned char *)salt, (const unsigned char *)rawKey, FIXED_KEY_SIZE, 1, hashedKey, NULL) )//needs salt from file if decrypting
                 {
                     printf("something went wrong initializing key\n"); 
                 }
 
                 printf("print hashed key:%s\n",hashedKey);
-                RC4_set_key(key,keySize,(const unsigned char*)hashedKey);
+                RC4_set_key(key,FIXED_KEY_SIZE,(const unsigned char*)hashedKey);
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__XXXXXXXX" /ignoring salted string in fd
             }
             else if (headerStat == 0)
@@ -261,19 +355,10 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 offset += bytes; //increment the offset by 16 or number of bytes read 
             }   
             ftruncate(fd,offset);
-        }
-    remove(streamCipher); //need to either clear or delete the temp file for decryption
-    delete key;
-    if (fstat(fd,&sb)==-1)
-        perror("stat");
-    else
-    {
-        printf("\tsize: %ld\n", sb.st_size); 
-        printf("\tinode: %lu\n", sb.st_ino);
-        printf("\tblksize %lu\n",sb.st_blksize);
-        printf("\tblkcount %lu\n",sb.st_blocks);
-    }    
-}
+        }*/
+
+
+
 
     ////////////////////////////
 
