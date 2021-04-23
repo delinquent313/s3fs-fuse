@@ -61,6 +61,7 @@ char* getKey(const char *path)
     strncat(absolutePath, &c, 1); //adds '/' after {user}
     absolutePath = strcat(absolutePath,path);
     printf("path to key file: %s\n",absolutePath);
+
     truncate(absolutePath,16);// make sure to get rid of excess bits in file before we open key should be no greater than 16 characters
     FILE *filePtr = fopen(absolutePath,"r");
     if (filePtr == NULL)
@@ -82,6 +83,7 @@ char* getKey(const char *path)
     //maybe free memory if it works :)   
     printf("done.\n");
     printf("read key from %s: %s\n", absolutePath,fileCpy);
+    fileCpy[fileLength] = '\0'; //ensure the key is the correct size for strlen function
     return fileCpy;
 }
 unsigned char* generateSalt() //get salt random 8 bytes from user and return 16 bit string containing Salted__{8randombytes}
@@ -149,6 +151,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     //declared as c string
     char* rawKey = getKey((const char*)".rc4Key"); 
     int keySize = strlen(rawKey); 
+
     printf("rawKey: %s\n",rawKey);
     printf ("key length: %d\n",keySize);
     //fstat fd for length and other variables 
