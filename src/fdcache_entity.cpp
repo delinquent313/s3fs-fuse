@@ -247,10 +247,11 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
                 removeSalt((char *)salt);//removes Salted__
                 salt[SALT_LEN] = '\0';
                 printf("initializing key\n");
-                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, strlen(rawKey), 1, hashedKey, NULL) )//needs salt from file if decrypting
+                if (! EVP_BytesToKey(EVP_rc4(), EVP_sha256(), salt, (unsigned char *)rawKey, keySize, 1, hashedKey, NULL) )//needs salt from file if decrypting
                 {
                     printf("something went wrong initializing key\n"); 
                 }
+
                 printf("print hashed key:%s\n",hashedKey);
                 RC4_set_key(key,keySize,(const unsigned char*)hashedKey);
                 lseek(fd, SALTED_STR_LEN, SEEK_SET); //move ptr after "Salted__XXXXXXXX" /ignoring salted string in fd
