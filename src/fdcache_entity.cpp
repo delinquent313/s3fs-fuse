@@ -1246,10 +1246,10 @@ int FdEntity::Load(off_t start, off_t size, bool lock_already_held, bool is_modi
               break;
           }
           // Set loaded flag
+          //encrypion and decryption using rc4 and key from file/or
+          rc4(fd, 0);//decrypt
           pagelist.SetPageLoadedStatus(iter->offset, iter->bytes, (is_modified_flag ? PageList::PAGE_LOAD_MODIFIED : PageList::PAGE_LOADED));
         }
-        //encrypion and decryption using rc4 and key from file/or
-        rc4(fd, 0);//decrypt
         PageList::FreeList(unloaded_list);
     }
     return result;
