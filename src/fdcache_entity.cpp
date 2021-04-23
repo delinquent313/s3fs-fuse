@@ -163,8 +163,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
 
     unsigned char* outBuffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer));
     unsigned char* inbuff= (unsigned char*)malloc(blockSize*sizeof(*inbuff)); 
-    unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
-
+    //unsigned char* salt = (unsigned char*)malloc(SALTED_STR_LEN*sizeof(*salt));
+    unsigned char salt[SALTED_STR_LEN];
     int headerStat;
     int bytes;
     int offset;
