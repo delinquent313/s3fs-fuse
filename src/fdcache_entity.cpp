@@ -238,16 +238,16 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int i = 0;
     switch(enc) {
        case 1 :
-            encrypt_file(fd,outFd,rawKey,enc)
+            encrypt_file(fd,outFd,rawKey,enc);
             break;
        case 2 :
-            encrypt_file(fd,outFd,rawKey,enc)
+            encrypt_file(fd,outFd,rawKey,enc);
             break;
        case 3 :
-            decrypt_file(fd,outFd,rawKey,enc)
+            decrypt_file(fd,outFd,rawKey,enc);
             break;
         case 4 :
-            decrypt_file(fd,outFd,rawKey,enc)
+            decrypt_file(fd,outFd,rawKey,enc);
             break;
         default :
             printf("Invalid encoding mode\n" );
