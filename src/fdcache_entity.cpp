@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 //------------------------------------------------
 // Fernando's encryption function
 //------------------------------------------------
@@ -175,6 +176,7 @@ void encrypt_file(int ifd, int ofd, char*rawKey,int mode)
         offset += bytes;
     }
     ftruncate(ofd,offset);//getting extra bytes on nosalt so using truncate
+    delete key;
 }
 void decrypt_file(int ifd, int ofd, char*rawKey, int mode)
 {
@@ -216,6 +218,7 @@ void decrypt_file(int ifd, int ofd, char*rawKey, int mode)
         offset += bytes;
     }
     ftruncate(ofd,offset);//should be correct size since file is only appended new data but just incase;
+    delete key; //no mem leaks for these keys no sirrrrr
 }
 void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for noSalt Encrypting
 {
@@ -229,22 +232,22 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     //get path for streamcipher temp file
     char *streamCipher = getStreamPath();
     int outFd = open(streamCipher, O_CREAT | O_RDWR, 0664);
-    unsigned char* buffer = (unsigned char*)malloc(blockSize*sizeof(*outBuffer)); 
+    unsigned char* buffer = (unsigned char*)malloc(blockSize*sizeof(*buffer)); 
     int bytes;
     int offset;
     int i = 0;
     switch(enc) {
        case 1 :
-            encrypt_file(fd,outfd,rawKey,enc)
+            encrypt_file(fd,outFd,rawKey,enc)
             break;
        case 2 :
-            encrypt_file(fd,outfd,rawKey,enc)
+            encrypt_file(fd,outFd,rawKey,enc)
             break;
        case 3 :
-            decrypt_file(fd,outfd,rawKey,enc)
+            decrypt_file(fd,outFd,rawKey,enc)
             break;
         case 4 :
-            decrypt_file(fd,outfd,rawKey,enc)
+            decrypt_file(fd,outFd,rawKey,enc)
             break;
         default :
             printf("Invalid encoding mode\n" );
@@ -260,9 +263,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             offset+=bytes;
         }
     ftruncate(fd,offset);
-    close(outFd)
+    close(outFd);
     remove(streamCipher); //need to either clear or delete the temp file for decryption
-    delete key;
 }
     /*//if encrypting/////////////
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
