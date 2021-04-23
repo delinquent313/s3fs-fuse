@@ -183,7 +183,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int i = 0;
     //if encrypting/////////////
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
-    unsigned char* hashedKey = (unsigned char *)malloc(16*sizeof(*hashedKey));
+    unsigned char* hashedKey = (unsigned char *)malloc(keySize*sizeof(*hashedKey));
     if (enc==1)
     {
         printf("generating salt... \n");
