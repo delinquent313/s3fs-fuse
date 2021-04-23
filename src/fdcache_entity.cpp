@@ -108,21 +108,7 @@ int isSalted (char* file) //pass address of pointer in
                 return 0;
     return 1;
 }
-int removeSaltHeader (char* file) //pass address of pointer in
-{
-    char *saltFlag = "Salted__";
-    for (int i = 0; i < SALT_LEN; i++)
-        if(saltFlag[i]!=file[i])//not salted return something    
-                return -1;
-    char *fileCpy = (char *)malloc(sizeof(char)*(strlen(file)-SALT_LEN)); //allocate size of file - 16
-    printf("[memory alocated to fileCpy; size: %d]\n",(strlen(file)-SALT_LEN));
-    //Salted__ needs to be removed from file
-    memcpy(fileCpy,&file[SALT_LEN],strlen(file)-SALT_LEN); //copy contents without salt to fileCpy
-    printf("[memcpy file to copy without the first 8 bits (\"Salted__\");]\n");
-    printf("copy: \n%s\n", fileCpy);
-    strcpy(file,fileCpy); //overwrite file with 8 less bytes
-    return 1;
-}
+
 void removeSalt (char* file) //pass address of pointer in
 {
     char *fileCpy = (char *)malloc(sizeof(char)*(8)); //allocate size of file - 16 //////////changing this to hard 8 bits
@@ -161,9 +147,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     else
     {
 	    printf("\tsize: %ld\n", sb.st_size); 
-	    printf("\tinode: %u\n", sb.st_ino);
-        printf("\tblksize %u\n",sb.st_blksize);
-        printf("\tblkcount %u\n",sb.st_blocks);
+	    printf("\tinode: %lu\n", sb.st_ino);
+        printf("\tblksize %lu\n",sb.st_blksize);
+        printf("\tblkcount %lu\n",sb.st_blocks);
     }
     //int fileLength = sb.st_size;
     int blockSize = sb.st_blksize;//used to write block by blockif multpleblocks
@@ -186,7 +172,8 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     int i = 0;
     //if encrypting/////////////
     RC4_KEY *key = new RC4_KEY; //create pointer to the address of struct RC4_KEY key to pass into set key function
-    unsigned char* hashedKey = (unsigned char *)malloc(keySize*sizeof(*hashedKey));
+    unsigned char hashedKey[16];
+    //unsigned char* hashedKey = (unsigned char *)malloc(keySize*sizeof(*hashedKey));
     if (enc==1)
     {
         printf("generating salt... \n");
@@ -236,7 +223,7 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
             lseek(fd,0,SEEK_SET);
             printf("reading salt... \n");
             read(fd,salt,SALTED_STR_LEN);
-            salt[SALTED_STR_LEN] = '\0'; //sanatizing salt string
+            //salt[SALTED_STR_LEN] = '\0'; //sanatizing salt string
             printf("dbg: print header: %s\n", salt);
             printf ("done.\n");
             headerStat = isSalted((char *)salt);
@@ -283,9 +270,9 @@ void rc4(int fd, int enc) //enc =1 for encrypting enc=0 for decrypting enc=2 for
     else
     {
         printf("\tsize: %ld\n", sb.st_size); 
-        printf("\tinode: %u\n", sb.st_ino);
-        printf("\tblksize %u\n",sb.st_blksize);
-        printf("\tblkcount %u\n",sb.st_blocks);
+        printf("\tinode: %lu\n", sb.st_ino);
+        printf("\tblksize %lu\n",sb.st_blksize);
+        printf("\tblkcount %lu\n",sb.st_blocks);
     }    
 }
 
