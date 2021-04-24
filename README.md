@@ -1,11 +1,5 @@
-# s3fs
-
-s3fs allows Linux and macOS to mount an S3 bucket via FUSE.
-s3fs preserves the native object format for files, allowing use of other
-tools like [AWS CLI](https://github.com/aws/aws-cli).  
-[![s3fs-fuse CI](https://github.com/s3fs-fuse/s3fs-fuse/workflows/s3fs-fuse%20CI/badge.svg)](https://github.com/s3fs-fuse/s3fs-fuse/actions)
-[![Twitter Follow](https://img.shields.io/twitter/follow/s3fsfuse.svg?style=social&label=Follow)](https://twitter.com/s3fsfuse)
-
+# s3fs-fuse-rc4
+Forked from s3fs-fuse, s3fs-fuse-rc4 uses rc4 encryption/decryption uploaded and downloaded from AWS S3 buckets. Developed on Arch Linux.
 ## Features
 
 * large subset of POSIX including reading/writing files, directories, symlinks, mode, uid/gid, and extended attributes
@@ -22,60 +16,19 @@ tools like [AWS CLI](https://github.com/aws/aws-cli).
 
 ## Installation
 
-Many systems provide pre-built packages:
-
-* Amazon Linux via EPEL:
-
-  ```
-  sudo amazon-linux-extras install epel
-  sudo yum install s3fs-fuse
-  ```
-
 * Arch Linux:
 
   ```
-  sudo pacman -S s3fs-fuse
+  git clone https://github.com/delinquent313/s3fs-fuse-rc4
+  cd s3fs-fuse-rc4 
+  makepkg -i
   ```
-
-* Debian 9 and Ubuntu 16.04 or newer:
-
-  ```
-  sudo apt install s3fs
-  ```
-
-* Fedora 27 or newer:
+Be sure to set the key file named .rc4Key in the home directory or it will use a default password for encryption/decryption. 
 
   ```
-  sudo dnf install s3fs-fuse
+  echo "RC4KEY" > ~/.rc4Key
   ```
 
-* Gentoo:
-
-  ```
-  sudo emerge net-fs/s3fs
-  ```
-
-* RHEL and CentOS 7 or newer through via EPEL:
-
-  ```
-  sudo yum install epel-release
-  sudo yum install s3fs-fuse
-  ```
-
-* SUSE 12 and openSUSE 42.1 or newer:
-
-  ```
-  sudo zypper install s3fs
-  ```
-
-* macOS via [Homebrew](https://brew.sh/):
-
-  ```
-  brew install --cask osxfuse
-  brew install s3fs
-  ```
-
-Otherwise consult the [compilation instructions](COMPILATION.md).
 
 ## Examples
 
