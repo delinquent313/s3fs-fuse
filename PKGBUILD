@@ -1,7 +1,7 @@
 # Maintainer:  fernando villarreal <fernando.villarreal.sd@gmail.co>
 
 pkgname=s3fs-fuse-rc4
-pkgver=1.89.r1872.cc81c39
+pkgver=1.89.r1875.6edd47e
 pkgrel=1
 pkgdesc='FUSE-based file system backed by Amazon S3 with OpenSSL support, with rc4 encryption'
 arch=('i686' 'x86_64')
@@ -22,20 +22,20 @@ provides=('s3fs-fuse' 's3fs')
 conflicts=('s3fs-fuse' 's3fs' 's3fs-c-git')
 
 pkgver() {
-  cd s3fs-fuse
+  cd s3fs-fuse-rc4
   printf "%s." "$(grep "AC_INIT(" configure.ac | awk 'BEGIN {FS = " "} {print $2}')" |  sed 's/)//g'
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 build() {
-  cd s3fs-fuse
+  cd s3fs-fuse-rc4
   ./autogen.sh
   ./configure --prefix=/usr --with-openssl
   make
 }
 
 package() {
-  cd s3fs-fuse
+  cd s3fs-fuse-rc4
 
   # We don't need anything related to git in the package
   rm -rf .git*
