@@ -1,16 +1,16 @@
 # Maintainer:  fernando villarreal <fernando.villarreal.sd@gmail.co>
 
 pkgname=s3fs-fuse-rc4
-pkgver=1.89.r1871.91e1369
+pkgver=1.89.r1872.cc81c39
 pkgrel=1
 pkgdesc='FUSE-based file system backed by Amazon S3 with OpenSSL support, with rc4 encryption'
 arch=('i686' 'x86_64')
-url='https://github.com/delinquent313/s3fs-fuse'
+url='https://github.com/delinquent313/s3fs-fuse-rc4'
 license=('GPL2')
 depends=('fuse>=2.8.4'
          'curl'
          'libxml2')
-source=('git+https://github.com/delinquent313/s3fs-fuse')
+source=('git+https://github.com/delinquent313/s3fs-fuse-rc4')
 sha256sums=('SKIP')
 makedepends=('git'
              'glib2'
